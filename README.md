@@ -1,2 +1,2 @@
 # myRpository
-裸仓库
+git测试仓库
