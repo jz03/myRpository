@@ -1,0 +1,20 @@
+1.加载配置文件
+2.扫描相关的类，扫描注解
+3.初始化bean对象
+4.实现依赖注入
+5.构造handlermapping处理映射器，将配置好的url和method建立映射关系
+
+
+http://localhost:8080/demo/handler01
+
+7.14 加班 3.5小时
+7.15 加班 2.5小时
+7.31 加班 1小时
+8.3 加班 1小时
+
+
+src/main/webapp/WEB-INF
+
+http://localhost:8080/jsp/success.jsp
+
+src/main/webapp/WEB-INF/jsp/success.jsp
