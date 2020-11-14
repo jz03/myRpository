@@ -25,3 +25,5 @@ git show 38379cf888059
 |-- logs/        # 各个refs的历史信息
 |-- objects/     # Git本地仓库的所有对象 (commits, trees, blobs, tags)
 `-- refs/        # 标识你项目里的每个分支指向了哪个提交(commit)。
+
+-------------------------------------
