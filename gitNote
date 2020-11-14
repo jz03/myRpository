@@ -26,4 +26,8 @@ git show 38379cf888059
 |-- objects/     # Git本地仓库的所有对象 (commits, trees, blobs, tags)
 `-- refs/        # 标识你项目里的每个分支指向了哪个提交(commit)。
 
--------------------------------------
+3.分支与合并@基础
+创建分支 git branch experimental
+查看分支 git branch
+切换分支 git checkout experimental
+
