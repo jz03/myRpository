@@ -30,4 +30,16 @@ git show 38379cf888059
 创建分支 git branch experimental
 查看分支 git branch
 切换分支 git checkout experimental
+合并分支 git merge experimental 将experimental分支的内容合并到当前的分支
+图形化显示提交记录 gitk
+删除分支 git branch -d experimental
+撤销合并 git reset --hard HEAD 回退到当前的head版本，如果进行了merge，并且做了commit，需要回退到上次的版本即可
+快速向前合并 当前的合并操作没有冲突，git自动进行了一个commit操作，这就是快速向前合并
+
+4.比较
+任意两个分支的差异 git diff master..test
+上次提交与本地的差异 git diff
+当前的索引和上次提交间的差异 git diff --cached
+当前的工作目录与另外一个分支的差别 git diff test
+显示差异点 git diff --stat
 
