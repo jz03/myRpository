@@ -1,0 +1,27 @@
+1.GIT对象模型
+.SHA 对象名
+.对象
+	类型： blob tree commit tag
+	大小
+	内容
+
+显示一个对象的原生内容，去除差异比较 查看一个commit对象
+git show -s --pretty=raw  e407102b2b
+
+查看tree对象类型
+git ls-tree fb3a8bdd0ce
+
+查看blob对象
+git show 38379cf888059
+
+2.git目录和工作目录
+.git目录下的文件
+
+|-- HEAD         # 这个git项目当前处在哪个分支里
+|-- config       # 项目的配置信息，git config命令会改动它
+|-- description  # 项目的描述信息
+|-- hooks/       # 系统默认钩子脚本目录
+|-- index        # 索引文件
+|-- logs/        # 各个refs的历史信息
+|-- objects/     # Git本地仓库的所有对象 (commits, trees, blobs, tags)
+`-- refs/        # 标识你项目里的每个分支指向了哪个提交(commit)。
