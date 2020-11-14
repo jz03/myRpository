@@ -44,3 +44,12 @@ git show 38379cf888059
 显示差异点 git diff --stat
 
 5.分布式的工作流程
+共同使用一个远程仓库时，如何解决冲突
+	git fetch 抓取远程分支的内容，更新本地的远程分支
+	git diff master origin/master 比较本地分支和本地远程分支的差异
+	git merge 将本地远程分支（origin/master）的内容合并到本地分支(master)，此时出现冲突
+	手动解决冲突
+	git add 添加本地冲突解决的文件
+	git commit 提交本地冲突的解决结果
+	git push 将本地的内容发布到远程仓库中
+	
