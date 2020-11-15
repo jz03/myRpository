@@ -68,3 +68,5 @@ origin/master是分支master的追踪分支，fetch命令执行的时候，会�
 	 git restore fileName
 	.当本地文件修改已经add到暂存区时,撤销暂存区的add
 	 git restore --staged fileName
+	.将当前的修改恢复到head版本（所有文件）
+	 git reset --hard HEAD
