@@ -64,3 +64,7 @@ origin/master是分支master的追踪分支，fetch命令执行的时候，会�
 可以操作那些要添加的文件
 
 8.git的撤销操作
+	.当本地文件修改还没有add到暂存区时，撤销当前的变更
+	 git restore fileName
+	.当本地文件修改已经add到暂存区时,撤销暂存区的add
+	 git restore --staged fileName
