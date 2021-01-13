@@ -12,3 +12,11 @@
 rm -rf index.lock
 ```
 
+
+
+#### 2.提取指定版本的文件
+
+```shell
+git show <commitId>:<filePath> > <outFilePath>
+```
+
