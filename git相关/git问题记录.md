@@ -1,6 +1,6 @@
 # git问题记录
 
-#### 1.操作失败，提示index.lock  file exists
+#### 1. 操作失败，提示index.lock  file exists
 
 **原因**：当前的操作没有完成，不允许其他操作。
 
@@ -14,9 +14,21 @@ rm -rf index.lock
 
 
 
-#### 2.提取指定版本的文件
+#### 2. 提取指定版本的文件
 
 ```shell
 git show <commitId>:<filePath> > <outFilePath>
 ```
 
+
+
+#### 3.  切换到指定历史版本，然后回到当前工作的版本
+
+```shell
+#切换到指定历史版本
+git checkout <commitId>
+#回到当前工作的版本
+git checkout <branchName>
+```
+
+每一个commit都相当于一个分支，只不过branch命名过的commit具有特殊的功能（修改提交等）
