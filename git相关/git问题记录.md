@@ -32,3 +32,15 @@ git checkout <branchName>
 ```
 
 每一个commit都相当于一个分支，只不过branch命名过的commit具有特殊的功能（修改提交等）
+
+
+
+#### 4. 将制定的版本合并到当前分支
+
+一般是针对在合并的过程中将某一次 的commit弄丢，需要把丢失的提交给找回来
+
+```shell
+git cherry-pick <commitId>
+```
+
+执行完之后一般会出现冲突，此时按照解决冲突的方式解决即可。
