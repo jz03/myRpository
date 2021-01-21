@@ -44,3 +44,5 @@ git cherry-pick <commitId>
 ```
 
 执行完之后一般会出现冲突，此时按照解决冲突的方式解决即可。
+
+#### 5.revert代码合并之后，再次合并将会之前的代码给弄丢，需要再次revert还原的那个commit
