@@ -46,3 +46,14 @@ git cherry-pick <commitId>
 执行完之后一般会出现冲突，此时按照解决冲突的方式解决即可。
 
 #### 5.revert代码合并之后，再次合并将会之前的代码给弄丢，需要再次revert还原的那个commit
+
+#### 6.git命令框显示中文文件名称乱码，导致不能添加提交
+
+git 默认中文文件名是 \xxx\xxx 等八进制形式，是因为 对0x80以上的字符进行quote。
+
+只需要设置core.quotepath设为false，就不会对0x80以上的字符进行quote。中文显示正常
+
+```shell
+git config --global core.quotepath false
+```
+
