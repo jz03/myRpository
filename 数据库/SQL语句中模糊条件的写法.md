@@ -14,5 +14,6 @@
 
   ```sql
   RESOURCE_NAME like concat(concat("%",#{param}),"%")
+  RESOURCE_NAME like concat("%",#{param},"%")
   ```
 
