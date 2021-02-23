@@ -57,3 +57,9 @@ git 默认中文文件名是 \xxx\xxx 等八进制形式，是因为 对0x80以�
 git config --global core.quotepath false
 ```
 
+#### 7.删除git中暂存的用户名和密码
+
+```shell
+git config --system --unset credential.helper
+```
+
