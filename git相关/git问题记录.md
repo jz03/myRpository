@@ -66,3 +66,4 @@ git config --system --unset credential.helper
 git config --global credential.helper store
 ```
 
+如果上述命令执行没有效果，删除.git-credentials文件中的内容
