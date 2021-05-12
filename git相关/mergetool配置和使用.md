@@ -21,7 +21,9 @@ git mergetool [<filePath>]
 
 执行完之后可以看到调用指定的比较工具界面，然后进行文件冲突的合并，保存冲突文件，冲突自动解决，冲突文件自动删除。
 
+### 3.difftool的配置
 
+difftool的配置命令和mergetool的方式相同，只需要把merge替换成diff即可
 
 **参考文献**
 
