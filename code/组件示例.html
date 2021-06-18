@@ -16,7 +16,23 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript">
-        Vue.component('blog-post', {    
+        //全局写法
+        // Vue.component('blog-post', {    
+        //   props: ['post'],
+        //   template: `
+        //     <div class="blog-post">
+        //       <h3>{{ post.title }}</h3>
+        //       <button v-on:click="$emit('enlarge-text', 0.1)">Enlarge text</button>
+        //       <div v-html="post.content"></div>
+        //     </div>
+        //   `
+        // });
+        var blogPost = {    
+          data: function () {
+            return {
+              count: 0
+            }
+          },
           props: ['post'],
           template: `
             <div class="blog-post">
@@ -25,7 +41,8 @@
               <div v-html="post.content"></div>
             </div>
           `
-        })
+        };
+
         new Vue({ el: '#components-demo' ,
             data: {
                 posts: [
@@ -40,7 +57,10 @@
               onEnlargeText: function (enlargeAmount) {
                 this.postFontSize += enlargeAmount
               }
-            }
+            },
+          components:{
+            'blog-post':blogPost
+          }
 
      })
     </script>
