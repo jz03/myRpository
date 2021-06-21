@@ -1,4 +1,13 @@
 ## java异常处理
+```mermaid
+classDiagram
+	Serializable <|..Throwable : implements
+    Throwable <|-- Error
+    Throwable <|-- Exception
+   	Exception <|-- RuntimeException   	
+    
+```
+
 
 - 异常说明
 
