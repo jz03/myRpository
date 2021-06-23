@@ -35,5 +35,8 @@ fillInStackTrace() 重新设置异常的发生地，也可以用抛出新异常�
 
 - 异常链
 
+Throwable initCause(Throwable cause) 
+
+主要在抛出新异常的时候接到原来的异常链，让这些异常链能够连接上去，也可以使用异常中的构造器，构造器中的异常主要是用来接收同类的异常类型，如果是其他两种异常类型需要用initCause的方式。
 
 
