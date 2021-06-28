@@ -1,0 +1,6 @@
+1.解决idea生成图片中文乱码的问题
+
+在安装目录下修改下边的文件
+idea64.exe.vmoptions
+idea64.exe.vmoptions
+添加 -Dfile.encoding=UTF-8
