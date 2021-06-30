@@ -13,11 +13,13 @@ JVM包括类加载子系统、**运行时数据区域**、执行引擎（即时�
 
 用于存储局部变量表、操作数栈、动态链接、方法出口等
 
+各线程栈使用
+
 - Native Method Stacks(本地方法栈)
 
 主要提供调用本地方法
 
-- program counter register(程序计数器)
+- program counter register(程序计数器)	
 
 主要用来保证代码的执行顺序，不能出现混乱。
 
