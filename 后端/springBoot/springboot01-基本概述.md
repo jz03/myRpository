@@ -18,9 +18,7 @@
 
 ### 4.Spring IOC
 
-IOC（Inversion Of Control）是由DI（Dependency Injection）和DL（Dependency Lookup）两部分组成的。
-
-在创建IOC容器的时候更多是DI，从容器中获取需要的bean则是DL。
+IOC（Inversion Of Control）是一种设计原则，DI和DL是IOC设计理念的两种实现方式。
 
 然而DI中的工作内容更加复杂，这其中分为两大步
 
