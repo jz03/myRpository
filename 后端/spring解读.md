@@ -1,6 +1,6 @@
 ### 1.定义
 
-一站式轻量级开源框架，简化java开发，解决业务逻辑层与其他各层的耦合问题。
+一站式轻量级开源框架，基于javaee的框架，简化java开发，解决业务逻辑层与其他各层的耦合问题。
 
 ### 2.核心
 
@@ -9,6 +9,8 @@
 管理POJO对象和这些对象之间的关系。
 
 IOC（Inversion Of Control）是一种设计原则，DI和DL是IOC设计理念的两种实现方式。
+
+DI就是给对象实例注入属性
 
 - AOP模块
 
@@ -31,7 +33,7 @@ IOC（Inversion Of Control）是一种设计原则，DI和DL是IOC设计理念�
 
 #### 4.1BeanFactory和ApplicationContext比较
 
-BeanFactory和ApplicationContext是Spring的两大核心接口，都可以当做Spring的容器。
+BeanFactory和ApplicationContext是Spring的两大核心接口，都可以当做Spring的容器。两者表示了IOC容器的底层原理来源于工厂模式。
 
 但两者之间的区别是：
 
@@ -46,6 +48,16 @@ BeanFactory更加的简单粗暴，可以直接理解为hashMap
 ApplicationContext 更加的高级，多了更多的功能。
 
 ### 5.beans
+
+#### 5.1 bean的生命周期
+
+1. 用默认构造器创建对象
+2. set方法设置成员变量的值
+3. 后置处理器处理（初始化之前）
+4. 初始化操作
+5. 后置处理器处理（初始化之后）
+6. 业务使用bean
+7. 销毁bean
 
 ### 6.注解
 

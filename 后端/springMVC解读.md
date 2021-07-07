@@ -47,7 +47,7 @@ springMVC是一个基于java，实现了MVC设计模式的请求驱动类型的�
 
 - @RequestMapping   给方法和类添加URL请求路径
 
-- @RequestBody  接收的是json数据，将json数据转换成java对象
+- @RequestBody  方法接收的是json数据，将json数据转换成java对象
 - @ResponseBody  将方法返回对象转化成json数据返回到页面上
 - @RestController 相当于@ResponseBody ＋ @Controller
 
