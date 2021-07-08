@@ -4,6 +4,8 @@
 
 ![](D:\20-workspace\myRpository\image\微服务框架图-注解.png)
 
+![](D:\20-workspace\myRpository\image\微服务框架图-子项目.png)
+
 ## 2.主要包含的项目
 
 这些子项目分为两大类，一类是对成熟的框架进行springBoot化，另一类就是开发一些分布式系统的基础设施。
@@ -57,3 +59,22 @@ API网关组件，对请求提供路由及过滤功能。
 ### 2.11.Spring Cloud OpenFeign
 
 基于Ribbon和Hystrix的声明式服务调用组件，可以动态创建基于Spring MVC注解的接口实现用于服务调用。
+
+## 3.存在的问题和挑战
+
+网络问题，延迟开销，带宽问题，安全问题
+
+分布式中冗余问题
+
+性能问题
+
+部署复杂度高，对开发者要求也高
+
+## 4.springCloud与dubbo的区别
+
+dubbo的核心框架是服务化治理，服务调用rpc，springCloud是netflix开源微服务框架的集合。
+
+dubbo主要是提供了一个通信基础，其他组件可以在这个上边进行扩展，springCloud是利用自身的便利性，整合了一系列的微服务框架。
+
+
+
