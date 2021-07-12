@@ -2,7 +2,7 @@
 
 mybatis是一个持久性框架，半自动化ORM（对象关系映射）框架，避免了几乎所有的jdbc代码和手动设置参数和结果集。支持定制化的sql、存储过程和高级映射。通过简单的xml配置和注解完成接着操作。
 
-## 1.1. ORM
+### 1.1. ORM
 
 对象关系映射，关系数据库表的字段与对象属性存在一种映射关系。在程序中通过这种关系将数据持久化到关系数据库中。
 
@@ -74,7 +74,11 @@ Mybatis仅支持association关联对象和collection关联集合对象的延迟�
 - ReuseExecutor：可重复执行器，执行update或select，以sql作为key查找Statement对象，存在就使用，不存在就创建，用完后，不关闭Statement对象，而是放置于Map<String, Statement>内，供下一次使用。
 - BatchExecutor：执行update（没有select，JDBC批处理不支持select），将所有sql都添加到批处理中（addBatch()），等待统一执行（executeBatch()），它缓存了多个Statement对象，每个Statement对象都是addBatch()完毕后，等待逐一执行executeBatch()批处理。与JDBC批处理相同。
 
-### 4.3 映射器
+#### 4.3 延迟加载
+
+Mybatis仅支持association关联对象和collection关联集合对象的延迟加载，association指的就是一对一，collection指的就是一对多查询。
+
+## 5. 映射器
 
 #### 1.#{}与${}
 
@@ -201,7 +205,7 @@ Dao接口的工作原理是JDK动态代理，Mybatis运行时会使用JDK动态�
 
 Dao接口中的方法不能重载。
 
-### 5.具体使用
+## 6.具体使用
 
 #### 5.1动态SQL
 
@@ -209,9 +213,9 @@ Dao接口中的方法不能重载。
 
 动态标签trim|where|set|foreach|if|choose|when|otherwise|bind
 
-**执行原理：**使用 OGNL 的表达式，从 SQL 参数对象中计算表达式的值,根据表达式的值动态拼接 SQL ，以此来 完成动态 SQL 的功能。
+**执行原理：**使用 OGNL （使用特殊字符进行变量的赋值和取值操作）的表达式，从 SQL 参数对象中计算表达式的值,根据表达式的值动态拼接 SQL ，以此来 完成动态 SQL 的功能。
 
-### 6.插件
+## 7.插件
 
 #### 6.1.分页插件的原理
 
@@ -223,7 +227,7 @@ Mybatis仅可以编写针对ParameterHandler、ResultSetHandler、StatementHandl
 
 实现Mybatis的Interceptor接口并复写intercept()方法，然后在给插件编写注解，指定要拦截哪一个接口的哪些方法即可，在配置文件中配置你编写的插件。
 
-### 7.缓存
+## 8.缓存
 
 - 一级缓存: 基于 PerpetualCache 的 HashMap 本地缓存，其存储作用域为 Session，当 Session flush 或 close 之后，该 Session 中的所有 Cache 就将清空，默认打开一级缓存。
 - 二级缓存与一级缓存其机制相同，默认也是采用 PerpetualCache，HashMap 存储，不同在于其存储作用域为 Mapper(Namespace)，并且可自定义存储源，如 Ehcache。默认不打开二级缓存，要开启二级缓存，使用二级缓存属性类需要实现Serializable序列化接口(可用来保存对象的状态),可在它的映射文件中配置<cache/> 
