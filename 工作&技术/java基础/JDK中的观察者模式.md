@@ -4,7 +4,7 @@
 
 一个对象的改动，引起相关类的反应，看起来就像是一群对象看着一个对象的改动而做出相关的变动。
 
-![](..\image\jdk中的观察者模式类图.jpg)
+![](..\..\image\jdk中的观察者模式类图.jpg)
 
 Observable和Observer都是jdk中已经写好的类，这两个类构建了观察者设计模式，ConcreteObservable和ConcreteObserver两个类是开发者需要自己写的，通过使用jdk中写好的方法就可以实现观察者模式的功能。
 
