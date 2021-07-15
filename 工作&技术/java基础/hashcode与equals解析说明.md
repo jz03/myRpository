@@ -36,4 +36,4 @@ hashCode方法和equals方法必须同时覆盖。Object中的hashcode是对象�
 
 -------
 
-hashmap就是hash表数据结构的一种应用，提高了数据读写的速度。
+hashmap就是hash表数据结构的一种应用，提高了数据读写的速度。是hash表解决冲突方案的一种。
