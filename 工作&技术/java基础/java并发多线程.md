@@ -129,4 +129,25 @@ sleep（）造成阻塞时，没有释放锁。
 
 在使用wait和notify两个方法时，必须要获取同步对象锁，否则程序执行的时候就会出现异常。
 
-通常使用BlockingQueue队列来代替wait和notify的实现，这样的编码更加的方便安全。
+通常使用BlockingQueue队列来代替wait和notify的实现，这样的编码更加的方便安全,也大大减少了对同步锁的使用。
+
+队列中自带了对应的同步锁，减少了编程方面对对象同步的分析。减少了开发过程中出现的问题。
+
+### 5.1.队列中常用的方法解释
+
+根据返回类型分为了三种情况
+
+- add    增加一个元索           如果队列已满，则抛出一个IIIegaISlabEepeplian异常
+- remove  移除并返回队列头部的元素  如果队列为空，则抛出一个NoSuchElementException异常
+- element 返回队列头部的元素       如果队列为空，则抛出一个NoSuchElementException异常
+
+
+
+- offer    添加一个元素并返回true    如果队列已满，则返回false
+- poll     移除并返问队列头部的元素  如果队列为空，则返回null
+- peek    返回队列头部的元素       如果队列为空，则返回null
+
+
+
+- put     添加一个元素           如果队列满，则阻塞
+- take    移除并返回队列头部的元素   如果队列为空，则阻塞
