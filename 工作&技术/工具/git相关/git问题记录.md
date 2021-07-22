@@ -62,7 +62,7 @@ git config --global core.quotepath false
 ```shell
 #删除暂存
 git config --system --unset credential.helper
-#暂存账号和密码，执行如下命令之后，在输入一次账号密码就可以保存了
+#暂存账号和密码。执行如下命令之后，在输入一次账号密码就可以保存了
 git config --global credential.helper store
 ```
 
