@@ -42,6 +42,10 @@ executorService.shutdown();
 
 只能用执行器来驱动有返回值的任务，代码实现和没有返回值的要复杂的多。
 
+ExecutorService executor = Executors.newSingleThreadExecutor(); 
+
+Future<Boolean> future = executor.submit(new TaskThread("发送请求"));
+
 ### 2.2.优先级
 
 优先级只是代表线程被执行的频率，与多数操作系统都不能映射的很好。
