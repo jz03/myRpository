@@ -90,9 +90,31 @@ dubbo主要是提供了一个通信基础，其他组件可以在这个上边进
 
 ## 5.常用组件
 
-### 5.1.注册发现
+### 5.1.注册与发现
 
-Eureka：停止更新（ ap）
+Eureka：停止更新（ ap）,是个典范组件
+
+默认会开启自我保护机制（注册到Eureka的服务不会立马消失）
+
+集群：就是建立多个Eureka服务工程，让这些服务进行关联
+
+- 服务注册代码实现：
+
+启动一个或多个EurekaServer，在启动类上添加@EnableEurekaServer
+
+- 服务发现的代码实现：
+
+```java
+//在启动类上添加注解
+@EnableDiscoveryClient
+
+//服务发现
+@Resource
+private DiscoveryClient discoveryClient;
+List<String> services = discoveryClient.getServices();
+List<ServiceInstance> instances = discoveryClient.getInstances("PAYMENT-SERVICE");
+
+```
 
 zookeeper（cp）、consul（cp）、**nacos**
 
@@ -104,14 +126,56 @@ cap：c-强一致性，a-高可用，p-分区容错性
 
 - **ribbon**（客户端，进程内）
 
-里边有队形的负载均衡策略，这些策略可以配置和自定义
+里边有对应的负载均衡策略，这些策略可以配置和自定义
+
+代码实现：
+
+在服务访问端，在RestTemplate配置类上添加负载均衡注解@LoadBalanced
+
+```java
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+```
 
 - loadBalancer
-
 - feign(停止更新)
+
+Feign旨在使编写Java Http客户端变得更容易，优化改进了ribbon的使用，更加的便捷，集成了ribbon。
+
 - **openFeign**
 
 相比ribbon使用更加简洁实用，有访问的时间控制，访问超时就会出现错误。**openFeign**已经包含了ribbon
+
+**代码实现**：
+
+在启动 类上添加注解@EnableFeignClients
+
+在接口访问服务时添加对应的注解
+
+```java
+@Component
+@FeignClient(value = "PAYMENT-SERVICE")
+public interface PaymentFeignService
+{
+    @GetMapping(value = "/payment/get/{id}")
+    public CommonResult<Payment> getPaymentById(@PathVariable("id") Long id);
+
+}
+
+```
+
+对于访问时间的控制上，是在配置文件中完成的
+
+```yml
+#设置feign客户端超时时间(OpenFeign默认支持ribbon)(单位：毫秒)
+ribbon:
+  #指的是建立连接所用的时间，适用于网络状况正常的情况下,两端连接所用的时间
+  ReadTimeout: 5000
+  #指的是建立连接后从服务器读取到可用资源所用的时间
+  ConnectTimeout: 5000
+
+```
+
+
 
 ### 5.3.服务降级熔断
 
@@ -123,7 +187,8 @@ cap：c-强一致性，a-高可用，p-分区容错性
 
 服务降级（fallback）、服务熔断（服务降级之后，能够恢复链路）、服务限流
 
-resilience4j、**sentienl（阿里）**、、、
+- resilience4j、
+- **sentienl（阿里）**、、、
 
 ### 5.4.服务网关
 
