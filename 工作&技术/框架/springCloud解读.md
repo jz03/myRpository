@@ -185,22 +185,117 @@ ribbon:
 
 接近实时的监控
 
-服务降级（fallback）、服务熔断（服务降级之后，能够恢复链路）、服务限流
+服务降级（fallback）：将原来要造成程序终止的方法，及时返回一些友好的信息，不至于造成一连串的问题、
+
+服务熔断（服务降级之后，能够恢复链路）、服务限流
+
+**代码实现:**
+
+在启动类上添加@EnableHystrix或者是@EnableCircuitBreaker注解
+
+```java
+
+/*服务降级*/   
+@HystrixCommand(fallbackMethod = "paymentInfo_TimeOutHandler"/*指定善后方法名*/,commandProperties = {
+    @HystrixProperty(name="execution.isolation.thread.timeoutInMilliseconds",value="3000")
+})
+public String paymentInfo_TimeOut(Integer id)
+{
+    try { TimeUnit.MILLISECONDS.sleep(3000); } catch (InterruptedException e) { e.printStackTrace(); }
+    return "线程池:  "+Thread.currentThread().getName()+" id:  "+id+"\t"+"O(∩_∩)O哈哈~"+"  耗时(秒): 3";
+}
+
+//用来善后的方法
+public String paymentInfo_TimeOutHandler(Integer id)
+{
+    return "线程池:  "+Thread.currentThread().getName()+"  8001系统繁忙或者运行报错，请稍后再试,id:  "+id+"\t"+"o(╥﹏╥)o";
+}
+
+//=====服务熔断
+@HystrixCommand(fallbackMethod = "paymentCircuitBreaker_fallback",commandProperties = {
+    @HystrixProperty(name = "circuitBreaker.enabled",value = "true"),// 是否开启断路器
+    @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold",value = "10"),// 请求次数
+    @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds",value = "10000"), // 时间窗口期
+    @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage",value = "60"),// 失败率达到多少后跳闸
+})
+public String paymentCircuitBreaker(@PathVariable("id") Integer id) {
+    if(id < 0) {
+        throw new RuntimeException("******id 不能负数");
+    }
+    String serialNumber = IdUtil.simpleUUID();
+
+    return Thread.currentThread().getName()+"\t"+"调用成功，流水号: " + serialNumber;
+}
+public String paymentCircuitBreaker_fallback(@PathVariable("id") Integer id) {
+    return "id 不能负数，请稍后再试，/(ㄒoㄒ)/~~   id: " +id;
+}
+```
+
+
 
 - resilience4j、
 - **sentienl（阿里）**、、、
 
 ### 5.4.服务网关
 
-zuul(停止更新)、**gateway**、、
+- zuul(停止更新)、
+
+- **gateway**
+
+自身也有负载均衡的功能
+
+旨在提供一种简单而有效的方式来对API进行路由，以及提供一些强大的过滤器功能，例如:熔断、限流、重试等
+
+SpringCloud Gateway是基于WebFlux框架实现的，而WebFlux框架底层则使用了高性能的Reactor模式通信框架Netty。基于异步非阻塞模型上进行开发的。
+
+三个重要感念：路由、断言（Predicate）、过滤器
+
+Filter在“pre”类型的过滤器可以做参数校验、权限校验、流量监控、日志输出、协议转换等，在“post”类型的过滤器中可以做响应内容、响应头的修改，日志的输出，流量监控等有着非常重要的作用。
+
+核心逻辑：路由转发 + 执行过滤器链。
+
+断言：给请求地址提供了一组匹配规则，如访问时间、请求头、请求cookie
+
+过滤器：有框架写好的过滤器，也能够自定义过滤器。常用的是自己定义的过滤器。
+
+**代码实现：**
+
+在启动上添加@EnableEurekaClient，将网关服务注册到注册中心
+
+```yml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: payment_routh #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001          #匹配后提供服务的路由地址
+          uri: lb://payment-service #匹配后提供服务的路由地址
+          predicates:
+            - Path=/payment/get/**         # 断言，路径相匹配的进行路由
+```
+
+过滤器的实现是通过集成GlobalFilter,Ordered接口的实现来完成。
 
 ### 5.5.配置中心
 
-config(停止更新)、**nacos**、阿波罗、
+- config(停止更新)
 
-### 5.5.服务总线
+分为客户端和服务端
 
-bus(停止更新)、**nacos**、
+**nacos**、阿波罗、
 
+### 5.5.服务（消息）总线
 
+- bus(停止更新)
 
+操作各种消息中间件
+
+**nacos**、
+
+### 5.6.消息驱动
+
+stream：统一了各个消息中间件的差异
+
+### 5.7.链路跟踪
+
+sleuth
