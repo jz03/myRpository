@@ -286,6 +286,8 @@ spring:
 
 ### 5.5.服务（消息）总线
 
+消息总线会共建一个消息主题，消息主题上的消息会被所有的微服务实例监听和消费。
+
 - bus(停止更新)
 
 操作各种消息中间件
@@ -296,6 +298,10 @@ spring:
 
 stream：统一了各个消息中间件的差异
 
+![](D:\20-workspace\myRpository\image\stream原理图01.png)
+
+![](D:\20-workspace\myRpository\image\stream02.png)
+
 ### 5.7.链路跟踪
 
-sleuth
+sleuth：zipkin
