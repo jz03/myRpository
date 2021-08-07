@@ -67,3 +67,10 @@ git config --global credential.helper store
 ```
 
 如果上述命令执行没有效果，删除.git-credentials文件中的内容
+
+#### 8.查看当前仓库的信息
+
+```shell
+GIT_CURL_VERBOSE=1 git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
+```
+
