@@ -44,3 +44,35 @@ Sentinel 以流量为切入点，从流量控制、熔断、降级、系统负�
 
 ### 3.5.自定义全局服务降级处理方法
 
+```java
+@RestController
+public class RateLimitController {
+	...
+
+    @GetMapping("/rateLimit/customerBlockHandler")
+    @SentinelResource(value = "customerBlockHandler",
+            blockHandlerClass = CustomerBlockHandler.class,//<-------- 自定义限流处理类
+            blockHandler = "handlerException2")//<-----------
+    public CommonResult customerBlockHandler()
+    {
+        return new CommonResult(200,"按客戶自定义",new Payment(2020L,"serial003"));
+    }
+}
+
+```
+
+- blockHandler
+
+主要针对的是Sentinel进行限流造成的服务降级
+
+- fallback
+
+主要是针对java编程中出现的异常进行的服务降级
+
+### 4.分布式事务
+
+### 4.1.基本概念
+
+- TC (Transaction Coordinator) - 事务协调者：维护全局和分支事务的状态，驱动全局事务提交或回滚。（打工人）
+- TM (Transaction Manager) - 事务管理器：定义全局事务的范围：开始全局事务、提交或回滚全局事务。（老板）
+- RM (Resource Manager) - 资源管理器：管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚。（任务）
