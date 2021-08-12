@@ -2,7 +2,7 @@
 
 官方文档：https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.developing-web-applications
 
-springboot中没有web.xml文件：https://blog.csdn.net/weixin_34128501/article/details/92424885
+
 
 ### 1.静态资源的访问
 
@@ -61,3 +61,12 @@ Model
 ### 5.spring-boot页面
 
 spring-boot默认不支持jsp，要想实现页面的转发和重定向等操作，需要引入第三方模板和前后端分析
+
+### 6.其他问题
+
+#### 6.1.为何没有了web.xml文件
+
+> springboot中没有web.xml文件：https://blog.csdn.net/weixin_34128501/article/details/92424885
+
+打成jar包的没有按照 servlet3.0 的策略。打成war包的是按照servlet3.0的策略。因为jar包和war包的运行策略不一样。jar包实现的内嵌的容器，war包使用的外置的容器。
+

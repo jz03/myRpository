@@ -2,6 +2,12 @@
 
 springMVC是一个基于java，实现了MVC设计模式的请求驱动类型的轻量级web框架。
 
+是servlet相关框架的一个实现。
+
+- servlet
+- filter
+- listenning
+
 ### 2.优点
 
 - 支持各种视图技术
