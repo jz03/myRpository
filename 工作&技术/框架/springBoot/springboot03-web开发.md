@@ -1,3 +1,9 @@
+### 0.参考文档
+
+官方文档：https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.developing-web-applications
+
+springboot中没有web.xml文件：https://blog.csdn.net/weixin_34128501/article/details/92424885
+
 ### 1.静态资源的访问
 
 只要是resources路径下的这些目录下，静态资源可以直接访问

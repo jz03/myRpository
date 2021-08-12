@@ -77,6 +77,8 @@ public class RateLimitController {
 
 Seata是一款开源的分布式事务解决方案，致力于在微服务架构下提供高性能和简单易用的分布式事务服务。
 
+**启动方法**：通过启动bat文件来实现
+
 ### 4.1.基本概念
 
 - TC (Transaction Coordinator) - 事务协调者：维护全局和分支事务的状态，驱动全局事务提交或回滚。（seata服务器）
