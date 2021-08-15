@@ -5,8 +5,9 @@ springMVC是一个基于java，实现了MVC设计模式的请求驱动类型的�
 是servlet相关框架的一个实现。
 
 - servlet
-- filter
-- listenning
+- filter（过滤器）
+- listenning（监听器）
+- interceptor（拦截器）
 
 ### 2.优点
 
