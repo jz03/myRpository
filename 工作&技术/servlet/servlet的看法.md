@@ -1,0 +1,2 @@
+servlet是javaweb的基础规范，定义的了各种框架的基础。springMVC就是在servlet的基础上开发的，框架让javaWEB的开发更加便捷好用。
+
