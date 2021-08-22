@@ -133,6 +133,243 @@ get请求的解码是由Tomcat来进行解码的；post请求是由请求对象�
 
 ## 5.多个servlet之间的调用
 
+一般情況下，一个请求只能访问一个servlet。
+
 ### 5.1.重定向
 
+- 工作原理
+
+  用户第一次发送一个请求，访问到服务器的指定servlet，在servlet中指定重定向的地址，返回到浏览器，响应结果是302。浏览器根据状态码302去获取响应头中的location属性中的地址，发起第二次的请求。完成重定向。
+
+- 代码实现
+
+  ```java
+  //同一个服务器
+  resp.sendRedirect(“/myweb/myServlet”);
+  //其他服务器
+  resp.sendRedirect(“https://www.baidu.com/”);
+  ```
+
+- 特征
+
+  ①请求地址有同一个服务器和其他服务器
+
+  ② 请求次数至少是两次
+
+  ③请求方式，在第二的请求是get方式
+
+- 缺点
+
+  由于大部分时间浪费在了浏览器和服务器之间的传递上，增加用户的等待时间。
+
 ### 5.2.转发
+
+- 工作原理
+
+  用户通过浏览器发送第一个请求，访问到指定的servlet，在servlet中向服务器Tomcat发送请求，自动调用第二个servlet。
+
+- 代码实现
+
+  ```java
+  RequestDispatcher requestDispatcher = req.getRequestDispatcher("/two");
+  requestDispatcher.forward(req,resp);
+  ```
+
+- 特征
+
+  ①请求次数一次
+
+  ②转发的地址只能是在同一个服务端
+
+  ③请求方式根据第一次的请求方式来决定
+
+- 优点
+
+  ①浏览器只发送一个请求
+
+  ②servlet的调用都发生在服务端上，节省了响应时间
+
+## 6.多个servlet之间数据的共享
+
+### 6.1.ServletContext接口(全局作用域对象)
+
+- 介绍
+
+  ①来自于servlet规范中的一个接口，Tomcat容器负责接口的实现
+
+  ②如果两个servlet来自同一个网站，可以通过此接口获取共享变量
+
+- 工作原理
+
+  每个网站（服务端）存在一个全局作用域对象，这个对象就像是一个map，可以进行存取数据。
+
+- 生命周期
+
+  ①在Tomcat服务器启动的时候，自动创建一个全局作用域对象
+
+  ②服务器运行期间，一个网站只有一个全局作用域对象，一直处于存活状态
+
+  ③当Tomcat服务器关闭时，就会销毁全局作用域对象
+
+- 代码实现
+
+```java
+//获取全局作用域
+ServletContext application = req.getServletContext();
+//向全局作用域中设置内容
+application.setAttribute("food","面条");
+//从全局作用域中获取内容
+String food = (String) application.getAttribute("food");
+```
+
+
+
+### 6.2.Cookie类
+
+- 介绍
+
+  ①来自于servlet规范中的一个工具类
+
+  ②前提条件，两个servlet在同一个网站中，并且是同一个浏览器/用户，此时借助于cookie实现数据共享
+
+  ③主要用于存储用户的数据，
+
+  ④是map数据类型，k-v键值对都是string类型，key不能有中文
+
+- 工作原理
+
+  当用户第一次访问web网站时，第一个servlet在运行期间创建一个cookie用来存用户信息，工作完毕之后，将cookie的信息传送到响应头中。
+
+  等过了一段时间之后，用户再次访问其他的servlet的时候，cookie信息就会无条件的写入到请求头中去，此时的servlet就可以通过请求头中的信息，获取到第一个servlet共享的数据。
+
+- 生命周期
+
+  默认情况下，浏览器关闭的时候，就会销毁cookie，cookie被存在客户端浏览器的缓存中
+
+  也可以手动设置cookie的存活时间
+
+- 代码实现
+
+  ```java
+      //1.创建cookie
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("执行MyServlet==>doget方法--------------------");
+          Cookie cookie = new Cookie("k1","v1");
+          //手动设置cookie的存活时间
+          cookie.setMaxAge(60);
+          resp.addCookie(cookie);
+      }
+  //2.使用cookie
+      protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+          System.out.println("执行TwoServlet==>doget方法--------------------");
+          Cookie[] cookies = req.getCookies();
+          for (Cookie c : cookies){
+              System.out.println(c.getName());
+              System.out.println(c.getValue());
+          }
+      }
+  ```
+
+  
+
+### 6.3.HttpSession接口（会话作用域对象）
+
+- 介绍
+
+  ①是servlet规范下的一个接口，实现类由Tomcat服务器来提供
+
+  ②前提条件，两个servlet在同一个网站中，并且是同一个浏览器/用户，实现数据共享
+
+- 生命周期(销毁的时机)
+
+  当浏览器关闭时，用户和服务端的联系被切断，但是session并没有被销毁，默认情况下，Tomcat设置session的存活时间是30分钟。也可以通过配置来设置session的存活时间。
+
+  ```xml
+  <!--手动设置session的存活时间-->
+  <session-config>
+      <!--默认单位是分钟-->
+      <session-timeout>5</session-timeout>
+  </session-config>
+  ```
+
+- 与cookie的区别
+
+  ①存储位置不同，cookie存放在客户端浏览器中，HTTPSession存放在服务端计算机中
+
+  ②存放的数据类型不同，cookie只能存放string类型，session可以存放多种类型
+
+  ③存储的数据数量不同，一个cookie对象只能存放一组数据，session一个对象可以存放多个数据
+
+- 代码实现
+
+```java
+HttpSession session = req.getSession();
+session.setAttribute("k1","v1");
+session.getAttribute("k1");
+```
+
+### 6.4.HttpServletRequest（请求作用域对象）
+
+- 介绍
+
+  在同一个网站中，两个servlet之间通过**请求转发**进行调用时，彼此之间共享数据。
+
+- 代码实现
+
+```java
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    System.out.println("执行MyServlet==>doget方法--------------------");
+    req.setAttribute("k1","v1");
+    req.getAttribute("k1");
+}
+```
+
+## 7.servlet规范的扩展
+
+### 7.1.监听器接口
+
+- 介绍
+
+  ①一组来自于servlet规范中的接口，有8个接口。这个接口的实现由开发人员来完成
+
+  ②主要用来监听【作用域对象的生命周期变化的时候】和【作用域对象共享数据的变化时候】
+
+- 开发步骤
+
+  ①选着对应的接口进行实现
+
+  ②重写事件处理方法
+
+  ③在配置文件web.xml进行注册配置
+
+  ```xml
+  <listener>
+      <listener-class>com.jizhou.controller.MyServletListener</listener-class>
+  </listener>
+  ```
+
+- 应用场景
+
+  创建数据库连接对象，减少数据库访问时间
+
+### 7.2.过滤器接口
+
+- 介绍
+
+  ①来自于servlet规范下的接口，实现类由开发人员自己提供
+
+  ②主要用来对资源文件的拦截
+
+- 作用
+
+  ①验证请求的合法性
+
+  ②增强当前的操作
+
+- 开发步骤
+
+  ①创建一个filter接口的实现类
+
+  ②重写其中处理方法
+
+  ③在配置文件web.xml进行注册配置
