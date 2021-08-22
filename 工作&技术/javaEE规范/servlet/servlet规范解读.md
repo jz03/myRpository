@@ -362,7 +362,7 @@ protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws Se
 
 - 作用
 
-  ①验证请求的合法性
+  ①验证请求的合法性（登录验证）
 
   ②增强当前的操作
 
@@ -373,3 +373,50 @@ protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws Se
   ②重写其中处理方法
 
   ③在配置文件web.xml进行注册配置
+
+- 代码实现
+
+```java
+  public class MyFilter implements Filter {
+  
+      @Override
+      public void init(FilterConfig filterConfig) throws ServletException {
+      }
+  
+      //过滤器的业务处理
+      @Override
+      public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+          //***********************业务逻辑处理*****************
+  
+          //放行，如果不写这句，意味着不放行
+          filterChain.doFilter(servletRequest,servletResponse);
+      }
+  
+      @Override
+      public void destroy() {
+      }
+  
+  }
+```
+
+```xml
+<filter>
+    <filter-name>myFilter</filter-name>
+    <filter-class>com.jizhou.filter.MyFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>myFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+- 拦截地址格式
+
+  | /img/myImg.jpg | 拦截具体的资源文件       |
+  | :------------- | ------------------------ |
+  | /img/*         | 拦截某个路径下的资源文件 |
+  | *.jpg          | 拦截某一种类型的资源文件 |
+  | /*             | 拦截任意资源文件         |
+
+  
+
