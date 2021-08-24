@@ -83,7 +83,7 @@ public class Driver extends NonRegisteringDriver implements java.sql.Driver {
 ```java
 public class Connector {
     public static void main(String[] args) throws Exception {
-        InputStream in = Connector.class.getClassLoader()
+        InputStream in = ClassLoader.class.getClassLoader()
                 .getResourceAsStream("jdbc.properties");
         Properties properties = new Properties();
         properties.load(in);
@@ -112,5 +112,9 @@ password=root
 jdbc规范中有三个接口分别用来对数据库的操作
 
 - Statement:用于执行静态的SQL语句并返回生成的结果对象
+
+  出现SQL注入的问题
+
 - PrepatedStatement:SQL语句被预编译并存储在该对象中，可以使用该对象进行多次调用
+
 - CallableStatement:用户执行SQL的存储过程
