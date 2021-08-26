@@ -122,3 +122,93 @@ jdbc规范中有三个接口分别用来对数据库的操作
 - PrepatedStatement:SQL语句被预编译并存储在该对象中，可以使用该对象进行多次调用
 
 - CallableStatement:用户执行SQL的存储过程
+
+### 2.1.没有返回值的操作
+
+### 2.1.有返回值的查询操作
+
+
+
+## 3.批量操作
+
+一般是批量插入的操作
+
+- 配置
+
+测试时使用的mysql是5.7版本
+
+设置jdbc的连接参设置批量插入 
+
+```properties
+url=jdbc:mysql://localhost:3306/caf_lhcx?rewriteBatchedStatements=true
+```
+
+数据库驱动也要支持对应的批量操作
+
+```xml
+<dependency>
+  <groupId>mysql</groupId>
+  <artifactId>mysql-connector-java</artifactId>
+  <version>5.1.37</version>
+</dependency>
+```
+
+- java代码实现
+
+```java
+ public static void insertData(List<Summary> summaryList)  {
+        Connection connection = null;
+        PreparedStatement ps  = null;
+        try {
+            connection = JdbcUtil.createConnection();
+            connection.setAutoCommit(false);
+            String sql = "insert into summary (item,period,org,score,weight,average_line) values(?,?,?,?,?,?)";
+            ps = connection.prepareStatement(sql);
+            for(Summary item:summaryList){
+                ps.setString(1,item.getItem());
+                ps.setString(2,item.getPeriod());
+                ps.setString(3,item.getOrg());
+                ps.setString(4,item.getScore());
+                ps.setString(5,item.getWeight());
+                ps.setString(6,item.getAverageLine());
+                //关键代码
+                ps.addBatch();
+            }
+            //关键代码
+            ps.executeUpdate();
+            //提交
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JdbcUtil.closeConnection(connection,null,ps);
+        }
+    }
+```
+
+## 4.事务管理
+
+### 4.1.特性
+
+- 原子性
+- 一致性
+- 隔离性：隔离级别可以设置，总共有四种隔离级别
+- 持久性
+
+### 4.2.隔离级别
+
+多个事务并发存在的问题
+
+①**脏读**：在一个事务还没有结束的时候，能够读取到还没有提交的数据
+
+②不可重复读：在一个事务还没有结束的时候，每次读取同一条数据，出现的结果是不一样的
+
+③幻读：在一个事务还没有结束的时候，多次读取到其他行的数据信息
+
+| 隔离级别         | 解决脏读 | 解决不可重复读 | 解决幻读 | 是否加锁 |
+| ---------------- | -------- | -------------- | -------- | -------- |
+| READ_UNCOMMITTED | 否       | 否             | 否       | 否       |
+| READ_COMMITED    | 是       | 否             | 否       | 否       |
+| REPEATABLE_READ  | 是       | 是             | 否       | 否       |
+| SERLALIZABLE     | 是       | 是             | 是       | 是       |
+
