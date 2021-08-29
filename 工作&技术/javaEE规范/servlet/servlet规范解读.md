@@ -418,5 +418,96 @@ protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws Se
   | *.jpg          | 拦截某一种类型的资源文件 |
   | /*             | 拦截任意资源文件         |
 
-  
 
+## 8.文件上传下载
+
+### 8.1.文件的上传
+
+文件上传一般是将本地的文件上传到web服务器上，然后web服务上才能直接处理文件中的内容。网络不可能直接访问本地的文件。
+
+- 注意事项
+
+  必须是post方法，enctype 属性应该设置为 multipart/form-data。
+
+
+
+- 代码实现
+  添加对应的依赖
+
+```xml
+<dependency>
+    <groupId>commons-fileupload</groupId>
+    <artifactId>commons-fileupload</artifactId>
+    <version>1.3.1</version>
+</dependency>
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.2</version>
+</dependency>
+```
+
+```java
+@Override
+protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    System.out.println("post请求开始*****");
+    DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+    // 设置内存临界值 - 超过后将产生临时文件并存储于临时目录中
+    diskFileItemFactory.setSizeThreshold(1024 * 1024 * 10);
+    diskFileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+    ServletFileUpload sfup = new ServletFileUpload(diskFileItemFactory);
+    //设置最大请求值 (包含文件和表单数据)
+    sfup.setSizeMax(1024 * 1024 * 50);
+    //设置最大文件上传值
+    sfup.setFileSizeMax(1024 * 1024 * 40);
+    //设置编码
+    sfup.setHeaderEncoding("UTF-8");
+
+    String storeFilePath = "D:\\20-workspace\\caf-data-deal\\src\\main\\resources\\upload";
+    try {
+        List<FileItem> fileItems = sfup.parseRequest(req);
+        for (FileItem item:fileItems){
+            if(!item.isFormField()){
+                String fileName = new File(item.getName()).getName();
+                String filePath = storeFilePath + File.separator + fileName;
+                File storeFile = new File(filePath);
+                item.write(storeFile);
+                System.out.println("文件上传成功");
+            }
+
+        }
+    } catch (FileUploadException e) {
+        e.printStackTrace();
+    }catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+```
+
+```html
+<form action="/myweb/excelDeal" enctype="multipart/form-data" method="post">
+    <input type="file" name="excelFile">
+    <br>
+    <input type="submit" value="上传">
+</form>
+```
+
+### 8.2.文件的下载
+
+将服务器中的文件转化成文件输出流（先将文件变为输入流，然后在操作输入流）写入到响应体中。
+
+```java
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String filePath = "D:\\Desktop\\常用信息.txt";
+    //设置文件下载的编码格式，文件下载到本地时文件的名字
+    resp.setHeader("content-disposition","attachment;filename="+ URLEncoder.encode("我的文件","UTF-8"));
+    InputStream in=new FileInputStream(filePath);
+    int len=0;
+    byte[] buffer = new byte[1024];
+    ServletOutputStream out = resp.getOutputStream();
+    while((len=in.read(buffer))!=-1){
+        out.write(buffer,0,len);
+    }
+    in.close();
+}
+```
