@@ -1,12 +1,12 @@
 ### 1.定义
 
-springMVC是一个基于java，实现了MVC设计模式的请求驱动类型的轻量级web框架。
+springMVC是一个基于spring，实现了MVC设计模式的请求驱动类型的轻量级web框架。
 
-是servlet相关框架的一个实现。
+是对servlet进行的一种封装，是servlet相关框架的一个实现。
 
-- servlet
-- filter（过滤器）
-- listenning（监听器）
+- servlet   servlet规范中的组件
+- filter（过滤器）servlet规范中的组件
+- listenning（监听器）servlet规范中的组件
 - interceptor（拦截器）框架中的组件
 
 ### 2.优点
@@ -18,7 +18,7 @@ springMVC是一个基于java，实现了MVC设计模式的请求驱动类型的�
 
 ### 3.核心组件
 
-- DispatcherServlet（前端控制器）
+- **DispatcherServlet**（前端控制器）
 
 接收请求，响应结果，相当于转发器，不需要程序员开发。
 
