@@ -26,13 +26,13 @@ springMVC是一个基于spring，实现了MVC设计模式的请求驱动类型�
 
 - HandlerMapping（处理器映射器）
 
-根据请求的URL查找对应的handler处理器，不需要程序员开发。
+根据请求的URL查找对应的handler处理器，不需要程序员开发。常见的使用是：@RequestMapping
 
 - HandlerAdapter（处理器适配器）
 
 适配器给handler处理制定了一些规范
 
-- Handler（处理器）
+- **Handler（处理器）**
 
 需要程序员开发处理逻辑，也就是后台的控制层
 
@@ -50,11 +50,5 @@ springMVC是一个基于spring，实现了MVC设计模式的请求驱动类型�
 
 ![](D:\20-workspace\myRpository\image\springMVC时序图.png)
 
-### 5.常见的注解
 
-- @RequestMapping   给方法和类添加URL请求路径
-
-- @RequestBody  方法接收的是json数据，将json数据转换成java对象
-- @ResponseBody  将方法返回对象转化成json数据返回到页面上
-- @RestController 相当于@ResponseBody ＋ @Controller
 
