@@ -39,9 +39,17 @@ public User user01(){
 - @bean的方式（主要是针对自己写的类）
 - 包扫描+指定注解的方式（针对第三方包的类）
 - @Import的方式来导入，导入的key是全类名
+  - ImportSelector接口实现的类	
+- FactoryBean接口的实现来注册bean
 
 ```java
 @Configuration
-@Import(User.class)
+@Import({User.class,MyImportSelector.class})
 public class Config {}
 ```
+
+### 1.4.bean的生命周期
+
+- 初始化方法
+- 销毁方法
+
