@@ -92,7 +92,130 @@ BeanPostProcessor接口在spring框架中的使用十分频繁
 
 ## 2.aop切面
 
+aop实现的原理是动态代理，对业务类没有一点的代码植入，侵入的代码实现对业务方法的增强。
 
+环绕通知有一点特别，必须要有返回值，否则就会出现错误。
 
+### 2.1.业务类
 
+```java
+public class MathCalculator {
+    public int div(int i,int j){
+        return i/j;
+    }
+}
+```
 
+### 2.2.切面类
+
+```java
+package org.example.bean;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
+
+@Aspect
+public class LogAspect {
+
+    @Pointcut("execution(public int org.example.bean.MathCalculator.*(..))")
+    public void pointCut(){}
+
+    /**
+     * 可以获取参数和执行方法的名称
+     * @param joinPoint
+     */
+    @Before("pointCut()")
+    public void logStart(JoinPoint joinPoint){
+        System.out.println("前置通知.....");
+    }
+
+    /**
+     * 可以获取参数和执行方法的名称
+     * @param joinPoint
+     */
+    @After("pointCut()")
+    public void logEnd(JoinPoint joinPoint){
+        System.out.println("后置通知--------");
+    }
+
+    /**
+     * 可以获取参数和执行方法的返回值
+     * @param joinPoint
+     * @param result
+     */
+    @AfterReturning(value="pointCut()",returning = "result")
+    public void logReturn(JoinPoint joinPoint,Object result){
+        System.out.println("返回通知--------");
+    }
+
+    /**
+     * 可以获取方法信息和异常信息
+     * @param joinPoint
+     * @param exception
+     */
+    @AfterThrowing(value = "pointCut()",throwing = "exception")
+    public void logException(JoinPoint joinPoint,Exception exception){
+        System.out.println("异常通知--------");
+    }
+
+    /**
+     * 环绕通知
+     * @param proceedingJoinPoint
+     * @throws Throwable
+     * @return
+     */
+    @Around("pointCut()")
+    public Object logAround(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        System.out.println("环绕通知之前");
+        Object proceed  = proceedingJoinPoint.proceed();
+        System.out.println("环绕通知之后");
+        return proceed;
+    }
+
+}
+```
+
+### 3.3.配置类
+
+```java
+package org.example;
+
+import org.example.bean.LogAspect;
+import org.example.bean.MathCalculator;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+@EnableAspectJAutoProxy
+@Configuration
+public class MyConfig {
+    @Bean
+    public LogAspect logAspect(){
+       return new LogAspect();
+    }
+
+    @Bean
+    public MathCalculator mathCalculator(){
+        return new MathCalculator();
+    }
+}
+```
+
+### 3.4.测试运行
+
+```java
+package org.example;
+
+import org.example.bean.MathCalculator;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class Mytest {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(MyConfig.class);
+        MathCalculator bean = applicationContext.getBean(MathCalculator.class);
+        int div = bean.div(1, 1);
+        System.out.println(div);
+    }
+}
+```
