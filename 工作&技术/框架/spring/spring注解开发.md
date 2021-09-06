@@ -219,3 +219,39 @@ public class Mytest {
     }
 }
 ```
+
+## 5.springmvc的整合
+
+### 5.1.共享庫和运行时插件（也就是springboot中的spi）
+
+- 添加配置扫描文件（固定写法）
+
+META-INF/services/javax.servlet.ServletContainerInitializer
+
+- 编写实现ServletContainerInitializer接口的类
+
+```java
+package org.example.servlet;
+
+import org.example.service.UserService;
+
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+import java.util.Set;
+
+@HandlesTypes({UserService.class})
+public class MySpi implements ServletContainerInitializer {
+    @Override
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+        System.out.println("自己添加的类型");
+        for (Class<?> cla:c) {
+            System.out.println(cla.getClass().getSimpleName());
+        }
+    }
+}
+```
+
+
+
