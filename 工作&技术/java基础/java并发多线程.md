@@ -1,4 +1,4 @@
-# 1.三个要素
+## 1.三个要素
 
 - 原子性：一个操作是不可中断的
 - 可见性：一个线程对共享变量的修改，其他线程也能看到
@@ -155,3 +155,45 @@ sleep（）造成阻塞时，没有释放锁。
 
 - put     添加一个元素           如果队列满，则阻塞
 - take    移除并返回队列头部的元素   如果队列为空，则阻塞
+
+## 6.线程池
+
+```java
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue) {
+    this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
+         Executors.defaultThreadFactory(), defaultHandler);
+}
+```
+
+- corePoolSize
+
+  要保留在池中的线程数，即使它们处于空闲状态，除非设置了allowCoreThreadTimeOut
+
+- maximumPoolSize
+
+  池中允许的最大线程数
+
+- keepAliveTime
+
+  当线程数大于核心数时，这是多余空闲线程在终止前等待新任务的最长时间。
+
+- unit
+
+  keepAliveTime参数的时间单位
+
+- workQueue
+
+  用于在执行任务之前保存任务的队列。 这个队列将只保存execute方法提交的Runnable任务。
+
+- threadFactory
+
+  执行程序创建新线程时使用的工厂
+
+- handler
+
+  执行被阻塞时使用的处理程序，因为达到了线程边界和队列容量
+

@@ -73,7 +73,7 @@ public class RateLimitController {
 
 主要是针对java编程中出现的异常进行的服务降级
 
-### 4.分布式事务（Seata）
+## 4.分布式事务（Seata）
 
 Seata是一款开源的分布式事务解决方案，致力于在微服务架构下提供高性能和简单易用的分布式事务服务。
 
