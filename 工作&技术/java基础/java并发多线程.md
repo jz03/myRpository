@@ -99,9 +99,25 @@ thread.start();
 
 不要以为原子操作就可以放弃同步，这样做是天真可笑的想法。
 
-### 3.2.volatile
+- 偏向锁-->轻量级锁--->重量级锁
 
-保证了可视性，有序性。主要用在一写多读的场景。
+- 公平锁和非公平锁
+
+  按照队列的顺序执行，非公平锁就是不按照顺序执行。ReentrantLock默认是非公平锁，非公平锁吞吐量大。
+
+  Synchronized是非公平锁。
+
+- ReentrantLock 可重入锁也是递归锁
+
+- 自旋锁
+
+- 读写锁
+
+- 
+
+### 3.2.volatile关键字
+
+保证了**可视性，有序性**。主要用在**一写多读**的场景。
 
 可见性：在线程修改共享变量之后，会把修改后的变量修改，把修改后的值更新到其他线程中去，实现了修改的可见性。
 
@@ -225,3 +241,28 @@ public ThreadPoolExecutor(int corePoolSize,
 
 - Semaphore:计数信号量
 
+### 7.2.CAS
+
+CAS的操作就是比较之后进行设置，整个过程没有使用同步锁。在jdk中的Unsafe类中，一般情况是不使用这个类，这个一般在容器中使用。保证了变量的原子性。
+
+Unsafe类中的方法一般是CPU的原生指令，不能被打断。
+
+- 存在的问题
+
+  存在ABA的问题，可以通过版本号进行控制，jdk中使用的类是AtomicStampedReference来解决。
+
+  循环可能能长，给CPU带来很大的开销
+
+  只能保证一个变量的原子性
+
+在原子类中的应用：
+
+```java
+public final int getAndAddInt(Object var1, long var2, int var4) {
+    int var5;
+    do {
+        var5 = this.getIntVolatile(var1, var2);
+    } while(!this.compareAndSwapInt(var1, var2, var5, var5 + var4));
+    return var5;
+}
+```
