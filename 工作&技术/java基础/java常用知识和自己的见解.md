@@ -17,3 +17,7 @@ List<Summary> summaries = new ArrayList<>();
 summaries.forEach(System.out::println);
 ```
 
+### 4.JNI
+
+JNI是实现本地方法实现的一种方式。
+

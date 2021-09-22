@@ -266,3 +266,13 @@ public final int getAndAddInt(Object var1, long var2, int var4) {
     return var5;
 }
 ```
+
+### 8.ThreadLocal
+
+主要解决多个线程之间共享变量的问题，ThreadLocal是将类成员变量 分给各个线程，实现变量的共享。
+
+本地线程变量不能修改，只能引用。ThreadLocal变量通常是private static修饰的。
+
+在和线程池一起使用的时候，容易出现问题，主要分为线程复用和内存常驻。
+
+一个ThreadLocal对象被多个线程使用，ThreadLocal中的ThreadLocalMap类中存放的是每个线程对应的value，但是key是弱引用，会随着YGC的触发随时被收回，但是其中value不会消失，因为他是强引用，所以在使用的时候，要及时的使用remove方法，这样可以防止内存泄露的风险。
