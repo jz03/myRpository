@@ -74,3 +74,12 @@ git config --global credential.helper store
 GIT_CURL_VERBOSE=1 git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY
 ```
 
+#### 9.配置的作用范围
+
+作用域大小排序：local < global < system
+
+local ：针对当前的项目有效，作用域最小
+
+global：登录这台计算机的用户有效，作用域中等
+
+system：登录这台计算机的有效，不管是哪个用户，作用域最大

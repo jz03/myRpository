@@ -20,7 +20,7 @@ summaries.forEach(System.out::println);
 使用时的是Consumer函数式接口，System.out::println是Consumer函数接口accept方法的一个实现，这种写法是简便方式，常规写法是e -> System.out.println(e);
 
 ```java
-#List.forEach的源码
+# List.forEach的源码
 default void forEach(Consumer<? super T> action) {
     Objects.requireNonNull(action);
     for (T t : this) {
