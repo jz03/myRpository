@@ -1,5 +1,3 @@
-## maven复习
-
 1. 在一个 Java 项目中， Java 类放在 src/main/java 下面，而 classpath 资源文件放在
    src/main/resources 下面
 
@@ -28,4 +26,34 @@ RELEASE 是指仓库中最后的一个非快照版本。
    war 需要一个 web.xml 配置文件在项目的 src/main/webapp/WEB-INF 目录中。 
    ear  可能是最简单的 Java EE 结构体，它主要包含一个部署描述符 application.xml文件， 一些资源和一些模块。 
 
+### 1.scope作用范围类型
 
+- compile
+
+  有效范围：所有；有传递依赖
+
+  如果没有指定的作用范围时，compile为默认类型，此种类型最为常见
+
+- runtime
+
+  有效范围：运行、测试。编译代码时无效，有依赖传递。典型代表是jdbc的驱动
+
+  代码编译的时候只需要jdk中接口，在运行阶段需要接口的具体实现。
+
+- provided
+
+  有效范围：编译、测试。没有传递依赖。典型代表是servlet-api
+
+  servlet-api在运行阶段的时候，Tomcat等相关的服务器提供了相关的类。在打包的时候将会被排除。
+
+- system
+
+  有效范围：编译、测试。有传递依赖
+
+  和provided相似，只是对应的包是在本地提供的
+
+- test
+
+  有效范围：测试。没有传递依赖。典型代表是JUnit
+
+  只在测试有效
