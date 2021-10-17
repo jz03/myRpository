@@ -33,3 +33,18 @@ default void forEach(Consumer<? super T> action) {
 
 JNI是本地方法实现的一种方式。
 
+### 5.下划线转为驼峰方式
+
+```java
+public static String underscoreToCamelCase(String underString){
+
+    Pattern pattern = Pattern.compile("(_)([a-regexZ]{1})");
+    Matcher matcher = pattern.matcher(underString);
+    StringBuffer sb = new StringBuffer();
+    while(matcher.find()){
+        matcher.appendReplacement(sb,matcher.group().replaceAll("_","").toUpperCase());
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
+}
+```
