@@ -13,25 +13,23 @@
    ```shell
    git log <filePath>
    ```
-
-   ②执行回退操作
+②执行回退操作
+   
 
    ```shell
-   #commitId是要回退的那个版本，原来的修改就会丢失
+   #commitId是要回退的指定版本，原来的修改就会丢失
    git checkout <commitId> <filePath>
-```
-   
-③进行提交和push
-   
-   ```shell
+   ```
+
+   ③进行提交和push
+
+    ```shell
    git commit [-m] [<commitMassage>]
    git push
-   ```
-   
+    ```
+
 2. 其他开发者可以获取远程的代码
 
    ```shell
    git pull
    ```
-
-   
