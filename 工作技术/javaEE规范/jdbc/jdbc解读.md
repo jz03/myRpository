@@ -324,3 +324,21 @@ url=jdbc:mysql://localhost:3306/caf_lhcx?rewriteBatchedStatements=true
 
 是一个开源的JDBC工具类库，是对jdbc的简单封装，学习成本低，极大地简化了jdbc编码的工作量，同时不会影响程序的性能。
 
+## 7.思考
+
+### 7.1.数据库操作的关键代码
+
+```java
+//1.获取数据库连接
+Connection connection = DriverManager.getConnection(s, "root", "root");
+//2.获取statement
+PreparedStatement ps = connection.prepareStatement(sql);
+//3.设置SQL执行的条件
+ps.setString(1,item.getAverageLine());
+//4.执行SQL语句
+ps.execute();
+ResultSet resultSet = ps.executeQuery();
+//5.获取执行出来的结果
+String item = resultSet.getString("item");
+```
+

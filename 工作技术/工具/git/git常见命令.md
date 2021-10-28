@@ -1,6 +1,6 @@
 # git常见命令
 
-#### 1. push pull
+#### 1. push和pull
 
 ```shell
 # 简化命令
@@ -10,6 +10,10 @@ git push <远程主机名> <本地分支名>:<远程分支名>
 
 # 将本地的test分支推送到远程的master分支上
 git push origin test:master
+# 指定本地分支test推送到本地当前分支对应的远程分支
+git push origin test
+# 将本地分支的代码推送对应的远程分支
+git push
 ```
 
 远程主机名一般是origin，也就是指向远程仓库的别名。后边的命令都是从本地分支到远程分支。
@@ -18,11 +22,15 @@ git push origin test:master
 
 ```shell
 git pull <远程主机名> <远程分支>:<本地分支>
+# 将远程master分支拉取到本地test分支
+git pull origin master:test
+# 指定master分支合并到当前所在的本地分支
+git pull origin master
+# 拉取远程仓库上所有分支的最新提交
+git pull
 ```
 
 将从远程主机上指定的分支上的最新内容拉取下来，如同下载最新内容到本地。
-
-默认情况下，拉取远程仓库上所有分支的最新提交。
 
 #### 2.本地分支与远程分支的对应关系
 
