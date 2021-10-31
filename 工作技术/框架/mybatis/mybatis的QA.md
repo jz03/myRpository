@@ -20,3 +20,25 @@ dynamic-datasource-spring-boot-starter是mybatis-plus中一个插件，主要是
 
 问题与3.1.的问题相似，不要添加“/”。
 
+### 5.mysql批量插入时传入多个参数自增id错误
+
+问题描述：出现自增id找不到指定的参数
+
+```java
+int insert(@Param("hotSearchInfoList") List<HotSearchInfo> hotSearchInfoList,
+           @Param("branchId") long branchId,
+           @Param("date") Date date);
+```
+
+```xml
+<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into hot_search_info(branch_id,img,hot_score,query,`index`,url,word,`desc`,record_date) values
+    <foreach item="item" collection="hotSearchInfoList" separator=",">
+        (#{branchId}, #{item.img}, #{item.hotScore}, #{item.query},#{item.index}, #{item.url}, #{item.word}, #{item.desc},#{date})
+    </foreach>
+</insert>
+```
+
+解决方法：
+
+将keyProperty的值改为“hotSearchInfoList.id”。

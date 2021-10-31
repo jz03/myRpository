@@ -1,0 +1,28 @@
+抓取百度热搜
+
+# 需求
+前30位
+每隔半个小时抓取一次
+抓取的信息存放在数据库中
+
+
+# 技术和工具
+## 1.框架
+spring-boot
+mybatis
+jsoup
+
+## 2.请求分析工具
+postman
+
+## 3.关键字
+baidu-hot-search
+baiduHotSearch
+
+HotSearchInfo
+hot_search_info
+
+#进度
+1.[100%]实现了数据的解析
+2.[100%]将解析的数据可以插入数据库
+3.[0%]实现定时任务
