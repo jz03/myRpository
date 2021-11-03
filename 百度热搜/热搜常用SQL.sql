@@ -1,5 +1,14 @@
-select branch_id,`index`,hot_score,query,`desc`,record_date  from hot_search_info where query='为什么付尾款总在半夜' ORDER BY record_date desc
+-- 热点信息
+select id,query,`desc`,create_date from hot_info ORDER BY	id DESC
 
-select *  from hot_search_info where branch_id='1635734353878'
--- 降序查询
-select branch_id  from hot_search_info GROUP BY branch_id ORDER BY branch_id desc
+-- 抓取查询
+SELECT	branch_id,create_date FROM	hot_branch 
+GROUP BY	branch_id ORDER BY	branch_id DESC
+-- 综合消息
+select b.id,`index`,hot_score,`query`,`desc`,a.create_date,b.create_date as info_date from hot_branch a,hot_info b 
+where a.hot_info_id=b.id and a.branch_id='1635946060527'
+
+select b.id,`index`,hot_score,`query`,`desc`,a.create_date from hot_branch a,hot_info b 
+where a.hot_info_id=b.id and b.query like '%郑州一小学4人检出阳性%'
+
+
