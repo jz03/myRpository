@@ -27,3 +27,7 @@ WHERE
 ORDER BY
 	a.create_date DESC
 
+
+select * from hot_info where 1=1                   
+ORDER BY id DESC limit 100
+
