@@ -1,3 +1,5 @@
 servlet是javaweb的基础规范，定义的了各种框架的基础。springMVC就是在servlet的基础上开发的，框架让javaWEB的开发更加便捷好用。
 
 这些规范中大部分都是定义的接口，具体实现都是封装在服务器中，这些实现是根据代码的不同情况来创建对象的。
+
+servlet主要是解决了web浏览器通过http协议向服务器通信的需求，做了一次规范。后来的springmvc和struts框架都是根据servlet规范进行的封装。
