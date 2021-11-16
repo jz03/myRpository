@@ -11,3 +11,20 @@ truncate table 表名;
 alter table 表名 auto_increment= 1;
 ```
 
+### 3.自增id处理
+
+- 查看当前自增数
+
+```sql
+  select auto_increment from information_schema.tables where table_schema='db name' and table_name='table name';
+```
+
+  
+
+- 修改自增数
+
+```sql
+alter table tablename auto_increment=NUMBER;
+```
+
+自增数比最大id多1。

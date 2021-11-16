@@ -1,6 +1,9 @@
 -- 热点信息
 select id,query,`desc`,create_date from hot_info ORDER BY	id DESC 
 
+SELECT max(hot_score) FROM	hot_branch
+SELECT min(hot_score) FROM	hot_branch
+
 -- 抓取查询
 SELECT	branch_id,create_date FROM	hot_branch
 GROUP BY	branch_id ORDER BY	branch_id DESC
