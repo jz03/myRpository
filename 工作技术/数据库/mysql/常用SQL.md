@@ -28,3 +28,20 @@ alter table tablename auto_increment=NUMBER;
 ```
 
 自增数比最大id多1。
+
+### 4.日期查询
+
+- 查询某一天的数据
+
+```sql
+select * from hot_info where  DATE_FORMAT(create_date,'%Y-%m-%d')='2021-11-20'
+```
+
+- 查询每天有多少条
+
+```sql
+select count(*) from hot_info                  
+group by DATE_FORMAT(create_date,'%y%m%d')
+```
+
+都是通过使用date_format函数来实现的功能

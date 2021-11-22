@@ -31,6 +31,10 @@ ORDER BY
 	a.create_date DESC
 
 
-select * from hot_info where 1=1                   
-ORDER BY id DESC limit 100
+select count(*) from hot_info                  
+group by DATE_FORMAT(create_date,'%y%m%d')
+
+select count(*) from hot_info where  DATE_FORMAT(create_date,'%Y-%m-%d')='2021-11-20'
+
+select max(hot_score),min(hot_score) from hot_branch group by DATE_FORMAT(create_date,'%y%m%d')
 
