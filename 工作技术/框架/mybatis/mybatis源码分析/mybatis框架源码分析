@@ -1,0 +1,92 @@
+mybatis框架源码分析
+
+1.动态代理包装接口的方法，让mybatis框架更加容易操作
+[MapperProxy]
+MapperMethod mapperMethod = cachedMapperMethod(method);
+
+2.根据表达式的特点进行分类执行
+sqlSession包含配置信息和执行器，args就是输入的参数
+[MapperMethod]
+result = executeForMany(sqlSession, args);
+
+3.参数转换
+[MapperMethod]
+Object param = method.convertArgsToSqlCommandParam(args);
+
+4.执行非分页查询 方法全限定名
+[MapperMethod]
+sqlSession.<E>selectList(command.getName(), param);
+
+5.根据方法全限定名找到对应SQL描述语句（xml中配置的SQL语句）
+[DefaultSqlSession]
+MappedStatement ms = configuration.getMappedStatement(statement);
+	config 环境信息
+	statementType SQL描述类型 PREPARED
+	sqlSource sql语句
+	parameterMap 入参类型
+	resultsMaps 返回结果类型
+
+6.获取SQL语句配置信息之后的执行操作
+[DefaultSqlSession]
+executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
+
+7.获取组合后的SQL，将入参和SQL包装到一个对象中
+[CachingExecutor]
+BoundSql boundSql = ms.getBoundSql(parameterObject);
+
+8.将SQL查询所有信息创建成一个缓存key，方便进行一级缓存
+[CachingExecutor]
+CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+
+9.主要是获取一级缓存中的内容，如果有一级缓存则从缓存中获取查询结果，如果没有，执行查询
+[CachingExecutor]
+query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+
+10.缓存处理
+[CachingExecutor]
+delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+
+11.从数据库中执行SQL，进行查询
+[BaseExecutor]
+list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
+
+12.获取StatementHandler
+[SimpleExecutor]
+list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
+
+13.生成StatementHandler，通过配置信息，将SQL相关的信息封装到一个对象中
+[SimpleExecutor]
+StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+//创建数据库连接
+stmt = prepareStatement(handler, ms.getStatementLog());
+popConnection(dataSource.getUsername(), dataSource.getPassword()).getProxyConnection();
+里边包含resultSetHandler、parameterHandler等关键信息
+
+14.
+[RoutingStatementHandler]handler.<E>query(stmt, resultHandler);
+
+15.执行器执行，执行SQL
+[PreparedStatementHandler]delegate.<E>query(statement, resultHandler);
+
+16.结果处理
+[DefaultResultSetHandler]
+resultSetHandler.<E> handleResultSets(ps);
+//获取查询结果
+ResultSetWrapper rsw = getFirstResultSet(stmt);
+//包装查询结果，主要是列信息
+new ResultSetWrapper(rs, configuration)
+
+17.给每一行的值进行映射处理，对应的类型处理
+[DefaultResultSetHandler]
+foundValues = applyAutomaticMappings(rsw, resultMap, metaObject, null) || foundValues;
+foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, null) || foundValues;
+
+18.自动映射处理，先进行缓存中取，如果没有从查询结果rsw中取
+设置单个字段映射类型信息
+[DefaultResultSetHandler]
+List<UnMappedColumnAutoMapping> autoMapping = createAutomaticMappings(rsw, resultMap, metaObject, columnPrefix);
+获取ResultSet中的值
+final Object value = mapping.typeHandler.getResult(rsw.getResultSet(), mapping.column);
+
+将结果值放入resultHandler中
+storeObject(resultHandler, resultContext, rowValue, parentMapping, rsw.getResultSet());

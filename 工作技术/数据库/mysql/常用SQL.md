@@ -45,3 +45,14 @@ group by DATE_FORMAT(create_date,'%y%m%d')
 ```
 
 都是通过使用date_format函数来实现的功能
+
+### 5.分页查询
+
+```sql
+select * from tableName order by id limit page_size offset (page_num-1)*page_size;
+select * from tableName order by id limit page_size,(page_num-1)*page_size;
+```
+
+分页查询最好进行排序，否则容易出现在不同页中查询重复的情况。
+
+mysql的起始位置是从0开始的0。原因是查询结果不包含起始位置
