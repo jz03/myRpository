@@ -64,3 +64,24 @@ echo "commit a tree" |git commit-tree 2f60c788e5255faef8f8^{tree}
 将会输出一个没有父提交的版本号，也就是根版本。
 
 然后执行rebase操作，实现对无用历史抛弃。
+
+#### 5.里程碑tag常用操作
+
+tag是记录某一次的提交，这次提交具有里程碑意义。
+
+```shell
+# 对当前的提交附加简单的tag
+git tag <tag-message>
+git tag v1.0
+
+# 对某一个commit标记为里程碑
+git tag -a <tag-message> <commit-id>
+git tag -a v1.0 2f60c788e525
+
+# 给创建的tag添加说明
+git tag -a <tag-message> -m <message> [<commit-id>]
+
+# 将本地的tag推送到远程仓库中
+git push origin <tag-message>
+```
+

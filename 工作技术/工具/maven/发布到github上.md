@@ -47,6 +47,13 @@
     </distributionManagement>
 ```
 
+通过以上的配置，就可以通过deploy命令，将本地的包推送到github上的指定仓库中。
+
 官方说明文档：
 
 > https://docs.github.com/cn/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry
+
+### 4.问题
+
+- PAT令牌会被ssh秘钥给覆盖掉，因为两者都有密码的权限
+- 创建的仓库也容易被替换

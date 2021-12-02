@@ -27,7 +27,7 @@ alter table 表名 auto_increment= 1;
 alter table tablename auto_increment=NUMBER;
 ```
 
-自增数比最大id多1。
+自增id指向的是下个id，所以自增数比最大id多1。
 
 ### 4.日期查询
 

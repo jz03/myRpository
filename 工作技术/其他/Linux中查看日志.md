@@ -18,6 +18,7 @@ tail命令主要是用来实时查看当前命令，由于工程正在启动中�
 less <filePath>
 
 #如果日志显示中文乱码，可以提前执行此命令
+#可以改为自己想要的编码
 export LESSCHARSET=latin1
 ```
 

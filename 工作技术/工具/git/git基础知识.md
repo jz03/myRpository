@@ -1,4 +1,5 @@
-1.GIT对象模型
+### 1.GIT对象模型
+
 .SHA 对象名
 .对象
 	类型： blob tree commit tag
@@ -14,7 +15,8 @@ git ls-tree fb3a8bdd0ce
 查看blob对象
 git show 38379cf888059
 
-2.git目录和工作目录
+### 2.git目录和工作目录
+
 .git目录下的文件
 
 |-- HEAD         # 这个git项目当前处在哪个分支里
@@ -26,7 +28,8 @@ git show 38379cf888059
 |-- objects/     # Git本地仓库的所有对象 (commits, trees, blobs, tags)
 `-- refs/        # 标识你项目里的每个分支指向了哪个提交(commit)。
 
-3.分支与合并@基础
+### 3.分支与合并@基础
+
 创建分支 git branch experimental
 查看分支 git branch
 切换分支 git checkout experimental
@@ -36,14 +39,16 @@ git show 38379cf888059
 撤销合并 git reset --hard HEAD 回退到当前的head版本，如果进行了merge，并且做了commit，需要回退到上次的版本即可
 快速向前合并 当前的合并操作没有冲突，git自动进行了一个commit操作，这就是快速向前合并
 
-4.比较
+### 4.比较
+
 任意两个分支的差异 git diff master..test
 上次提交与本地的差异 git diff
 当前的索引和上次提交间的差异 git diff --cached
 当前的工作目录与另外一个分支的差别 git diff test
 显示差异点 git diff --stat
 
-5.分布式的工作流程
+### 5.分布式的工作流程
+
 共同使用一个远程仓库时，如何解决冲突
 	git fetch 抓取远程分支的内容，更新本地的远程分支
 	git diff master origin/master 比较本地分支和本地远程分支的差异
@@ -55,31 +60,33 @@ git show 38379cf888059
 
 origin/master是分支master的追踪分支，fetch命令执行的时候，会把远程仓库的内容更新到追踪分支
 
-6.rebase
+### 6.rebase
+
 可以改变历史的提交记录
 可以将几个提交修改为一个提交
 可以修改提交的顺序
 
-7.交互式add
+### 7.交互式add
+
 可以操作那些要添加的文件
 
-8.git的撤销操作
-	.当本地文件修改还没有add到暂存区时，撤销当前的变更
-	 git restore fileName
-	.当本地文件修改已经add到暂存区时,撤销暂存区的add
-	 git restore --staged fileName
-	.将当前的修改恢复到head版本（所有文件），所有的修改都会丢失
-	 git reset --hard HEAD
-    commit之后的撤销
-    .撤销当前的commit的提交，暂存区和本地文件的修改不丢失
-     git reset --soft head^
-    .撤销当前的commit的提交，本地文件的修改不丢失
-     git reset --mixed(默认值) head^
+### 8.git的撤销操作
 
+​	.当本地文件修改还没有add到暂存区时，撤销当前的变更
+​	 git restore fileName
+​	.当本地文件修改已经add到暂存区时,撤销暂存区的add
+​	 git restore --staged fileName
+​	.将当前的修改恢复到head版本（所有文件），所有的修改都会丢失
+​	 git reset --hard HEAD
+​    commit之后的撤销
+​    .撤销当前的commit的提交，暂存区和本地文件的修改不丢失
+​     git reset --soft head^
+​    .撤销当前的commit的提交，本地文件的修改不丢失
+​     git reset --mixed(默认值) head^
 
-9.log和reflog日志的区别
+### 9.log和reflog日志的区别
 
-10.merge操作
+### 10.merge操作
 
 可以保存你之前的分支历史
 git merge --no-ff release
