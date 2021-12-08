@@ -34,3 +34,20 @@
    cnpm install
    cnpm run dev
    ```
+
+### 常用命令
+
+```shell
+# 查看安装的包
+npm list -g --depth 0
+# 安装组件包
+npm install <package-id> --global
+# 卸载组件包
+npm uninstall <package-id>
+
+# 查看配置
+npm config ls
+# 设置仓库地址
+npm config set registry <url>
+```
+

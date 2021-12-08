@@ -20,11 +20,12 @@ less <filePath>
 #如果日志显示中文乱码，可以提前执行此命令
 #可以改为自己想要的编码
 export LESSCHARSET=latin1
+export LESSCHARSET=utf-8
 ```
 
 - shift + g :回到日志的最末尾出（实时获取最新内容）
 
-- ？<关键字> : 向上查询内容
+- ？<关键字> : 从下往上查询内容
 
 - n ：向上查找上一个内容
 
@@ -33,3 +34,7 @@ export LESSCHARSET=latin1
   **注意事项**
 
   在查看日志时最好用键盘的PgUp和PgOn翻页，用方向键进行浏览内容。少用鼠标的滚轮来查看当前的内容。
+
+### 3.cat命令
+
+一次把一个文件全部展示出来。less和tail命令都是显示一部分。
