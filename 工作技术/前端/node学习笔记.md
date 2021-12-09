@@ -1,4 +1,4 @@
-### 安装nodejs，配置环境变量（解决安装组件的默认路径是c盘的问题）
+### 安装vue的脚手架，配置环境变量（解决安装组件的默认路径是c盘的问题）
 
 1. nodejs安装淘宝镜像
 
@@ -15,7 +15,7 @@
    cnpm install --global vue-cli
    ```
 
-### 使用
+### 使用，创建一个vue项目
 
 1. 创建一个基于 webpack 模板的新项目
 
@@ -47,7 +47,8 @@ npm uninstall <package-id>
 
 # 查看配置
 npm config ls
-# 设置仓库地址
+# 设置仓库地址 
 npm config set registry <url>
+npm config set registry https://registry.npm.taobao.org install
 ```
 
