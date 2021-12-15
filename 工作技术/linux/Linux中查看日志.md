@@ -38,3 +38,5 @@ export LESSCHARSET=utf-8
 ### 3.cat命令
 
 一次把一个文件全部展示出来。less和tail命令都是显示一部分。
+
+
