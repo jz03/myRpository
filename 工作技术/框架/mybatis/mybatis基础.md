@@ -102,8 +102,9 @@ ${}是拼接符，字符串替换没有预编译处理，变量的替换是在DB
 #### 3.如何传递多个参数
 
 - 顺序传参（不推荐）
-
 - @Param注解传参
+
+此种方式可以防止SQL注入，在SQL语句中使用${}依旧能够防止SQL注入
 
 ```xml
 public User selectUser(@Param("userName") String name, int @Param("deptId") deptId);
