@@ -44,3 +44,8 @@
 
 ```
 
+### 3.classpath:与classpath*:
+
+classpath:指定的本地的工程目录
+
+classpath*:可以指定引用jar所在的工程目录

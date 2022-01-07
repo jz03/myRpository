@@ -70,3 +70,8 @@ spring-boot默认不支持jsp，要想实现页面的转发和重定向等操作
 
 打成jar包的没有按照 servlet3.0 的策略。打成war包的是按照servlet3.0的策略。因为jar包和war包的运行策略不一样。jar包实现的内嵌的容器，war包使用的外置的容器。
 
+#### 6.2.默认的运行目录
+
+docBase 应用部署的目录，在springboot内置的容器中，也会创建一个类似的目录，默认就在 java.io.tmpdir 指定的 tomcat-docbase.xxx 下。
+
+workDir运行所在的目录，Tomcat在运行中会生成一些临时文件（比如 jsp 编译之后的 java / class 文件），而在springboot 的内嵌tomcat 中，则是通过 basedir 来指定目录。可以通过配置文件`server.tomcat.basedir`来进行自定义。

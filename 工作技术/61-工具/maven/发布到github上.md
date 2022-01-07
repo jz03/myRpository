@@ -2,7 +2,7 @@
 
 要在自己GitHub上创建自己的PAT，PAT是发布使用的令牌。
 
-![image-20211129172745824](D:\20-workspace\myRpository\image\生成PAT.png)
+![image-20211129172745824](..\..\..\image\生成PAT.png)
 
 具体操作可以参考官方说明
 
