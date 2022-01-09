@@ -1,3 +1,11 @@
+## 1.spring的初衷
+
+spring使创建java企业级应用更加容易，提供了java应用所需要的一切，可以根据应用程序的需要灵活的创建各种架构。
+
+Jigsaw：java1.9模块化设计标准。所以spring将分为了多个模块。
+
+
+
 ### 1.定义
 
 一站式轻量级开源框架，基于javaee的框架，简化java开发，解决业务逻辑层与其他各层的耦合问题。
@@ -18,7 +26,7 @@ DI就是给对象实例注入属性
 
 ### 3.模块组成
 
-![](D:\20-workspace\myRpository\image\spring模块.png)
+![](..\..\..\image\spring模块.png)
 
 - Core Container(核心容器)：其中包含了依赖注入的功能
 - AOP（面向切面编程）
