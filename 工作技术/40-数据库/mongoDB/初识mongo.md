@@ -19,5 +19,21 @@
 db.tableName.find({"feildName":{$exists:true}},{"feildName":1})
 ```
 
+### 3.查询出一个集合中所有的域名
+
+```sql
+// 第一步：创建命令，myCollectionName就是集合名称
+mr = db.runCommand({
+  "mapreduce" : "myCollectionName",
+  "map" : function() {
+    for (var key in this) { emit(key, null); }
+  },
+  "reduce" : function(key, stuff) { return null; },
+  "out": "myCollectionName" + "_keys"
+})
+// 第二步：查询出集合下的域名
+db[mr.result].distinct("_id")
+```
+
 
 

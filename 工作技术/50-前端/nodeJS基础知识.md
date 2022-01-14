@@ -8,13 +8,13 @@ node实现了异步操作,单进程单线程，异步回调接口，通过这些
 
 ### 1.事件驱动
 
-![img](D:\20-workspace\myRpository\image\node_event_loop.jpg)
+![img](..\..\image\node_event_loop.jpg)
 
 ### 2.模块化
 
 如果要对外暴露属性或方法，就用 exports 就行，要暴露对象(类似class，包含了很多属性和方法)，就用 module.exports。
 
-![img](D:\20-workspace\myRpository\image\nodejs-require.jpg)
+![img](..\..\image\nodejs-require.jpg)
 
 ### 3.函数
 

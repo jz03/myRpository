@@ -4,11 +4,97 @@ spring使创建java企业级应用更加容易，提供了java应用所需要的
 
 Jigsaw：java1.9模块化设计标准。所以spring将分为了多个模块。
 
+定义：一站式轻量级开源框架，基于javaee的框架，简化java开发，解决业务逻辑层与其他各层的耦合问题。
+
+### 1.2. 模块组成
+
+![](..\..\..\image\spring模块.png)
+
+- Core Container(核心容器)：其中包含了依赖注入的功能
+- AOP（面向切面编程）
+- Instrmentation（设备支持）
+- Data Access/Integeration（数据访问与集成）
+- web
+- Messaging
 
 
-### 1.定义
+## 2.核心技术
 
-一站式轻量级开源框架，基于javaee的框架，简化java开发，解决业务逻辑层与其他各层的耦合问题。
+### 2.1. IOC容器
+
+#### 2.1.1. ioc的概念
+
+IOC是一种设计思想，意思是**控制反转**，依赖注入（DI）和依赖查找（DL）是这个思想的两种实现方式。
+
+控制反转的思想是把创建对象的控制权交给其他程序来实现，使用的对象只需要直接引用创建好的对象就行了。
+
+#### 2.1.2.ioc容器概述
+
+`beans`和`context`包是Ioc容器的基础。接口`Beanfactory`提供了基本的功能。
+
+`ApplicationContext`接口代表了spring ioc容器。spring通过读取**配置元数据**，即可完成spring ioc容器的初始化工作。配置元数据一般是通过xml文件、java注解、java代码三种形式来完成的。
+
+#### 2.1.3.bean的概述
+
+被Ioc容器管理的对象成为bean。bean被定义为`BeanDefinition`接口。
+
+#### 2.1.4.依赖
+
+- 通过构造器来进行依赖注入
+
+  强制性依赖
+
+- 通过set方法实现依赖注入
+
+  可选依赖
+
+- 解决依赖
+
+  基于构造器造成的循环依赖spring不能够解决。
+
+#### 2.1.5.bean的范围
+
+常见的有单例、原型（多例），spring不管理原型bean的完整生命周期，创建之后的生命周期由客户端的程序来处理。
+
+#### 2.1.6.生命周期
+
+- bean的生命周期的回调
+
+  `InitializingBean`,`DisposableBean`
+
+  `init()`,`destroy()`
+
+  `@PostConstruct`,`@PreDestroy`
+
+- spring ioc容器生命周期的回调
+
+  `Lifecycle `,`LifecycleProcessor `,`SmartLifecycle`
+
+#### 2.1.7.容器的扩展
+
+- BeanPostProcessor
+
+  可以提供自己的实例化逻辑、依赖关系解析逻辑
+
+- BeanFactoryPostProcessor
+
+  主要是对bean的配置元数据进行操作
+
+- FactoryBean
+
+#### 2.1.8.基于注解的容器配置
+
+#### 2.1.9.基于java的容器配置
+
+
+
+### 2.2. AOP技术
+
+
+
+--------
+
+
 
 ### 2.核心
 
@@ -24,16 +110,6 @@ DI就是给对象实例注入属性
 
 以动态非侵入的方式增强服务。
 
-### 3.模块组成
-
-![](..\..\..\image\spring模块.png)
-
-- Core Container(核心容器)：其中包含了依赖注入的功能
-- AOP（面向切面编程）
-- Instrmentation（设备支持）
-- Data Access/Integeration（数据访问与集成）
-- web
-- Messaging
 
 ### 4.IOC容器
 
