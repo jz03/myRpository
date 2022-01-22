@@ -86,6 +86,12 @@ Mybatis仅支持association关联对象和collection关联集合对象的延迟�
 
 ${}是拼接符，字符串替换没有预编译处理，变量的替换是在DBMS外，不能防止SQL注入，变量替换后不会自动添加单引号。
 
+
+
+- 表名作参数时，必须用 ${}。如：select * from ${tableName}
+- order by 时，必须用 ${}。如：select * from t_user order by ${columnName}
+- 不论是单个参数，还是多个参数，一律都建议使用注解@Param("")，可以防止SQL注入
+
 #### 2.like语句如何写
 
 ① 推荐使用使用CONCAT()函数，例如：CONCAT(’%’,#{question},’%’) 
