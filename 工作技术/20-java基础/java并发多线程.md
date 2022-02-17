@@ -159,7 +159,7 @@ submit.cancel(true);
 
 主要使用的是wait和notify两个方法。
 
-sleep（）造成阻塞时，没有释放锁。
+sleep()造成阻塞时，没有释放锁。
 
 在使用wait和notify两个方法时，必须要获取同步对象锁，否则程序执行的时候就会出现异常。
 

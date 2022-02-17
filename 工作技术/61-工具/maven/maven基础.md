@@ -93,6 +93,27 @@ maven是日耳曼语其中一支的语言中的单词，这个小语种主要是
   有效范围：测试。没有传递依赖。典型代表是JUnit
 
   只在测试有效
+  
+- import
+
+  主要用在项目之间的继承，实现了对父工程的项目依赖。在springboot中的依赖官方给定的父工程，实现第三方依赖的定义。
+
+  ```xml
+  <dependencyManagement>
+      <dependencies>
+          <dependency>
+              <!-- Import dependency management from Spring Boot -->
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-dependencies</artifactId>
+              <version>2.6.3</version>
+              <type>pom</type>
+              <scope>import</scope>
+          </dependency>
+      </dependencies>
+  </dependencyManagement>
+  ```
+
+  
 
 ## 5.插件
 
