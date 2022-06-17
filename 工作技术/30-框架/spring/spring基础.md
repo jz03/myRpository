@@ -32,7 +32,11 @@ IOC是一种设计思想，意思是**控制反转**，依赖注入（DI）和�
 
 `beans`和`context`包是Ioc容器的基础。接口`Beanfactory`提供了基本的功能。
 
-`ApplicationContext`接口代表了spring ioc容器。spring通过读取**配置元数据**，即可完成spring ioc容器的初始化工作。配置元数据一般是通过xml文件、java注解、java代码三种形式来完成的。
+`ApplicationContext`接口代表了spring ioc容器，增加了更多的企业特定功能。
+
+spring通过读取**配置元数据**，即可完成spring ioc容器的初始化工作。配置元数据一般是通过xml文件、java注解、java代码三种形式来完成的。
+
+DefaultListableBeanFactory是容器的一种实现，实现的过程是十分复杂。
 
 #### 2.1.3.bean的概述
 
@@ -57,6 +61,10 @@ IOC是一种设计思想，意思是**控制反转**，依赖注入（DI）和�
 常见的有单例、原型（多例），spring不管理原型bean的完整生命周期，创建之后的生命周期由客户端的程序来处理。
 
 #### 2.1.6.生命周期
+
+对象实例化，属性赋值，初始化，销毁。
+
+BeanPostProcessor、aware类型的接口扩展
 
 - bean的生命周期的回调
 
