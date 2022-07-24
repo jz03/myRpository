@@ -113,7 +113,19 @@ maven是日耳曼语其中一支的语言中的单词，这个小语种主要是
   </dependencyManagement>
   ```
 
-  
+### 4.1.可选项（optional）
+
+```xml
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.25</version>
+      <optional>true</optional>
+    </dependency>
+```
+
+optional为true时，依赖传递是可以选择的，false时，依赖传递是必须传递的，不可以选择。
+
 
 ## 5.插件
 
