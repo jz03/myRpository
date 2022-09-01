@@ -25,7 +25,7 @@ spring提供了ApplicationContext接口的几个实现，在独立的应用中�
 
 在大多数的应用程序中，用户不需要显式的来实例化spring ioc容器。
 
-![container magic](D:\21-github仓库\myRpository\工作技术\30-框架\spring\官方文档\container-magic.png)
+![container magic](container-magic.png)
 
 上图显示了spring ioc容器如何工作的高级视图。应用程序类与元数据相结合，在ApplicationContext创建和初始化之后，产生一个可配置、可执行的系统（应用程序）。
 
