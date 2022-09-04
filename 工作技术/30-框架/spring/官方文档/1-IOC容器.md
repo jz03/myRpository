@@ -294,8 +294,427 @@ spring ioc容器实际上可以管理任何类，并不局限于真正的Java be
 
 #### 使用静态工厂方法来实例化
 
+当使用静态工厂方法创建定义一个bean时，使用class属性来指定包含静态工厂方法的类，并使用factory-method属性来指定工厂方法。开发者能够调用这个方法（带有参数的稍后进行描述）并返回一个对象，该对象随后将被视为通过构造器创建的对象。这种定义方式适合在遗留的代码中使用。
 
+下面的bean定义是通过调用工厂方法来创建的，定义没有指定返回对象的类型，只指定了包含工厂的类。在这个例子中createInstance()方法必须是静态方法。
+
+```xml
+<bean id="clientService"
+    class="examples.ClientService"
+    factory-method="createInstance"/>
+```
+
+下面展示了Java中的静态工厂：
+
+```java
+public class ClientService {
+    private static ClientService clientService = new ClientService();
+    private ClientService() {}
+
+    public static ClientService createInstance() {
+        return clientService;
+    }
+}
+```
+
+关于为工厂方法提供参数，对象在从工厂方法返回后设置属性的详细信息，请参考依赖和配置。
 
 #### 使用实例化工厂方法类实例化
 
+与通过静态工厂方法进行的实例化类似，使用实例化的工厂方法进行实例化，从容器中调用现有bean的非静态方法来创建新bean。
+
+要使用此功能，请将class属性设置为空，并在factory-bean属性中指定在容器中包含工厂方法的bean名称，使用factory-method属性设置工厂方法名称。下面的例子展示了如何设置：
+
+```xml
+<!-- the factory bean, which contains a method called createInstance() -->
+<bean id="serviceLocator" class="examples.DefaultServiceLocator">
+    <!-- inject any dependencies required by this locator bean -->
+</bean>
+
+<!-- the bean to be created via the factory bean -->
+<bean id="clientService"
+    factory-bean="serviceLocator"
+    factory-method="createClientServiceInstance"/>
+```
+
+下面展示的是Java相关代码：
+
+```java
+public class DefaultServiceLocator {
+
+    private static ClientService clientService = new ClientServiceImpl();
+
+    public ClientService createClientServiceInstance() {
+        return clientService;
+    }
+}
+```
+
+一个工厂有多个工厂方法，每个方法返回不同类型的对象，下面的示例展示了这些：
+
+```xml
+<bean id="serviceLocator" class="examples.DefaultServiceLocator">
+    <!-- inject any dependencies required by this locator bean -->
+</bean>
+
+<bean id="clientService"
+    factory-bean="serviceLocator"
+    factory-method="createClientServiceInstance"/>
+
+<bean id="accountService"
+    factory-bean="serviceLocator"
+    factory-method="createAccountServiceInstance"/>
+```
+
+下面展示了对应的工厂类：
+
+```java
+public class DefaultServiceLocator {
+
+    private static ClientService clientService = new ClientServiceImpl();
+
+    private static AccountService accountService = new AccountServiceImpl();
+
+    public ClientService createClientServiceInstance() {
+        return clientService;
+    }
+
+    public AccountService createAccountServiceInstance() {
+        return accountService;
+    }
+}
+```
+
+这种方法表明工厂bean本身可以通过依赖注入来配置管理。
+
+> 在spring文档中，“factory bean”指的是spring容器中的bean，通过实例或静态工厂方法来创建对象。相比之下，FactoryBean（注意大小写）指的是一个特定与spring的FactoryBean的实现类。
+
 #### 确定bean的运行时类型
+
+特定bean的运行时类型不容易被确定。bean元数据定义中的类只是一个初始类的引用，可能与声明的工厂方法结合在一起，也可能导致bean的不同运行时类型的FactoryBean类型，或者在实例化的工厂方法中根本不用设置。另外aop代理可以使用基于接口的代理，有限的公开目标bean的实际类型。
+
+了解特定bean实际的运行时类型，建议使用的BeanFactory.getType方法。使用getType方法获取bean。这将考虑上述所有的情况，BeanFactory.getBean方法返回相同的bean名称。
+
+## 1.4. 依赖
+
+典型的企业应用不是由单个对象组成。即便是最简单的应用程序也有几个对象一起工作，以呈现给用户最终使用的程序。接下来将介绍如何从多个单独的bean对象到完全实现的应用程序，通过对象之间的协作来实现这个目的。
+
+### 1.4.1. 依赖注入
+
+依赖注入的过程：对象通过构造函数的参数，工厂方法的参数，在对象实例构造完成之后，在对象实例上设置属性来定义他们之间的依赖项，然后容器在创建bean时注入这些依赖项。这个过程从根本上说是bean本身的逆向过程（因此称为控制反转），通过构造器和服务定位器来控制依赖项的位置和实例化。
+
+使用依赖注入原则，让代码更加清晰，当对象和他的依赖项在一起时，解耦更加有效。对象不需要查找其依赖项，也不用知道依赖项的位置和类型。因此，类变得更加容易测试，特别是依赖关系是接口或者是抽象类时，容易在单元测试中模拟实现。
+
+DI主要有两种变体：基于构造器的依赖注入和基于setter的依赖注入。
+
+#### 基于构造器的依赖注入
+
+基于构造器的依赖注入是由容器调用带有多个参数的构造器完成的，每个参数代表一个依赖项。调用带有特定参数的静态工厂方法来构造bean几乎是等价的。本章将以类似的方式处理构造器和静态工厂方法的参数。下面展示了只能通过构造器实现的依赖注入：
+
+```java
+public class SimpleMovieLister {
+
+    // the SimpleMovieLister has a dependency on a MovieFinder
+    private final MovieFinder movieFinder;
+
+    // a constructor so that the Spring container can inject a MovieFinder
+    public SimpleMovieLister(MovieFinder movieFinder) {
+        this.movieFinder = movieFinder;
+    }
+
+    // business logic that actually uses the injected MovieFinder is omitted...
+}
+```
+
+注意，这个类没什么特别之处，不依赖于容器的特定接口、基类或注解。
+
+##### 构造函数参数解析
+
+构造器参数解析匹配通过使用参数的类型开始。如果bean定义的构造器参数不存在异议，那么构造器中参数的顺序就是实例化的顺序。思考下边的类：
+
+```java
+package x.y;
+
+public class ThingOne {
+
+    public ThingOne(ThingTwo thingTwo, ThingThree thingThree) {
+        // ...
+    }
+}
+```
+
+假设ThingTwo和ThingThree不存在继承关系，下面的配置将会正常工作，并且不需要在<constructor-arg>元素中显式的指定构造参数索引或类型。
+
+```xml
+<beans>
+    <bean id="beanOne" class="x.y.ThingOne">
+        <constructor-arg ref="beanTwo"/>
+        <constructor-arg ref="beanThree"/>
+    </bean>
+
+    <bean id="beanTwo" class="x.y.ThingTwo"/>
+
+    <bean id="beanThree" class="x.y.ThingThree"/>
+</beans>
+```
+
+当引用另一个bean时，类型是已知的，可以进行匹配（如上所示）。当使用基本类型时，直接用<value>元素给出来，例如：<value>true</value>，spring不能识别value的类型，因此无法在没有其他帮助下进行类型匹配。思考下边的类：
+
+```java
+package examples;
+
+public class ExampleBean {
+
+    // Number of years to calculate the Ultimate Answer
+    private final int years;
+
+    // The Answer to Life, the Universe, and Everything
+    private final String ultimateAnswer;
+
+    public ExampleBean(int years, String ultimateAnswer) {
+        this.years = years;
+        this.ultimateAnswer = ultimateAnswer;
+    }
+}
+```
+
+*构造器参数类型匹配*
+
+在上述场景中，如果使用type属性显式指定构造器参数类型，容器可以使用基本类型来匹配，如下所示：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+    <constructor-arg type="int" value="7500000"/>
+    <constructor-arg type="java.lang.String" value="42"/>
+</bean>
+```
+
+*构造器参数索引*
+
+可以使用index属性来显式的指定构造器参数的索引，如下所示：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+    <constructor-arg index="0" value="7500000"/>
+    <constructor-arg index="1" value="42"/>
+</bean>
+```
+
+index除了可以解决基本类型的不确定外，还可以解决构造器同时具有相同类型参数的不确定性。
+
+> 索引是从0开始的
+
+*构造器参数名*
+
+也可以通过使用构造器参数名来解决不确定性，如下所示：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+    <constructor-arg name="years" value="7500000"/>
+    <constructor-arg name="ultimateAnswer" value="42"/>
+</bean>
+```
+
+请记住，要使用此功能，必须在编译代码时启用调试标志，spring以便可以从构造器中查找参数名称。如果不想带有调试标志，可以使用@ConstructorProperties jdk注解显式的命名构造器参数。如下所示：
+
+```java
+package examples;
+
+public class ExampleBean {
+
+    // Fields omitted
+
+    @ConstructorProperties({"years", "ultimateAnswer"})
+    public ExampleBean(int years, String ultimateAnswer) {
+        this.years = years;
+        this.ultimateAnswer = ultimateAnswer;
+    }
+}
+```
+
+#### 基于setter的依赖注入
+
+基于setter的依赖注入是由容器在调用无参默认构造器或无参静态工厂方法实例化bean之后，调用对象中的setter方法来完成的。
+
+下面的例子展示了一个只能通过setter的方式注入依赖项。这个类是传统的Java，不依赖于spring的任何接口、基类和注解。
+
+```java
+public class SimpleMovieLister {
+
+    // the SimpleMovieLister has a dependency on the MovieFinder
+    private MovieFinder movieFinder;
+
+    // a setter method so that the Spring container can inject a MovieFinder
+    public void setMovieFinder(MovieFinder movieFinder) {
+        this.movieFinder = movieFinder;
+    }
+
+    // business logic that actually uses the injected MovieFinder is omitted...
+}
+```
+
+ApplicationContext为其管理的bean，即支持构造器的方式，也支持setter的方式。在已经通过构造器创建的bean对象之后，还支持基于setter的方式。可以支持BeanDefinition的格式配置依赖项，也可以与PropertyEditor实例一起使用，将属性从一种格式转为另一种格式。然而，大多数的开发者并不直接使用这些类，而是使用xml的方式、带注解的组件（使用@Component`, `@Controller等进行注解的类）、或者基于Java的@Configuration注解类中的@Bean方法。然后将这些配置转换为BeanDefinition实例，并用于加载到整个spring ioc容器实例中。
+
+**基于构造器还是setter来实现依赖注入**
+
+由于可以混合使用两种方式，根据经验，对于强制依赖项使用构造器的方式，对于可选的依赖项使用setter的方式来实现。请注意，在setter方法上使用@Required注解可以使该属性变为必须的依赖项。
+
+spring团队通常提倡构造器的方式注入依赖项，因为能够将依赖项变成为不可变的对象，并确保所需的依赖项不为空。此外，构造器注入的组件总是以完全初始化的状态返回给客户端。顺便说一句，大量的使用构造器来实现依赖注入是一个糟糕的实践，这意味着类可能承载着过多的责任，应该进行重构来进行分离。
+
+setter方式主要用于可选的依赖项，这些依赖项可以在类中分配合理的默认值。否则就需要在代码使用的地方需要进行非空检查。setter注入的好处是，setter方法可以在对象创建完成之后重新配置新的依赖项。因此，通过JMX MBeans进行管理是setter注入的一个值得注意的项目。
+
+有时在处理没有源代码的第三方类时，可以给开发者做出更多选择，例如，如果第三方类不公开任何setter方法，那么构造器方式将是合适的方式。
+
+#### 依赖解析的过程
+
+容器解析bean的依赖项过程如下：
+
+- ApplicationContext被初始化和创建，使用的是配置了所有bean的配置元数据。配置元数据可以通过xml、Java代码和Java注解来实现。
+- 对于每个bean的依赖关系，以属性、构造器参数、静态工厂方法参数的形式表示，这些依赖项是在实际创建bean的时候提供的。
+- 每个属性或构造器参数都要设置实际的定义，或者是对容器中另一个bean的引用。
+- 每个属性或构造器参数的值都会被转换为实际的类型。默认情况下，spring可以将字符串类型转换为基本类型。例如：int、long、string、boolen等。
+
+spring容器在创建容器时验证每个bean的配置。但是，直到实际创建bean时才设置bean属性。单例作用域的bean在创建容器时进行预实例化，否则只有在请求bean时才创建他。创建一个bean可能会导致创建其他bean，因为创建并分配了bean的依赖项或者依赖项的依赖项。请注意，这些依赖项匹配错误可能会延迟出现。
+
+------
+
+**循环依赖**
+
+如果主要使用构造器注入依赖，可能会创建一个不可解析的循环依赖场景。
+
+例如：类A通过构造器注入类B的一个实例，而类B通过构造器注入一个类B的一个实例。如果配置了类A和类B相互注入的bean，spring ioc容器将在运行时检测此循环依赖，并抛出BeanCurrentlyInCreationException异常。
+
+一种解决方法是编辑一些类的源代码，把基于构造器引用的依赖改为基于setter的方式来实现。或者避免使用构造器注入，只使用setter的方式注入。换句话说，尽管不推荐这样做，但是可以使用setter的方式来解决循环依赖项。
+
+与典型的情况不同，bean A和bean B之间的循环依赖强制在初始化完成（鸡和蛋的问题）。
+
+------
+
+开发者通常可以相信spring可以做出正确的事情。会在容器加载的过程中进行检查配置中存在的问题，例如，对不存在的bean进行引用，循环依赖项。spring在创建bean时设置属性并解析依赖项。这意味着，如果在创建对象或其依赖项出现问题，正确加载的spring容器稍后可以在请求对象时产生异常。例如，bean由于缺少或无效属性而抛出异常。某些配置问题的可见性可能会延迟，这就是ApplicationContext默认实现对单例bean实现预实例化的原因。在实际需要这些bean之前创建这些bean需要花费一些时间和内存，会在创建ApplicationContext时发现配置中存在的问题，而不是启动之后发现。开发者可以覆盖此行为，让单例延迟初始化，而不是提前初始化。
+
+如果不存在循环依赖项，那么当一个或多个协作的bean注入到bean中时，每个协作bean在注入之前都已经配置好了。这就意味着，如果Bean A依赖与Bean B，spring ioc容器在调用Bean A上的setter方法之前完全配置了Bean B。换句话说，Bean被实例化，他的依赖项被配置，并且相关的生命周期方法也被调用。
+
+#### 依赖注入示例
+
+下面的示例使用的是基于xml的配置元数据，基于setter的依赖注入。spring xml配置文件的一小部分指定了一些bean定义：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+    <!-- setter injection using the nested ref element -->
+    <property name="beanOne">
+        <ref bean="anotherExampleBean"/>
+    </property>
+
+    <!-- setter injection using the neater ref attribute -->
+    <property name="beanTwo" ref="yetAnotherBean"/>
+    <property name="integerProperty" value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+下面展示了对应的ExampleBean类：
+
+```java
+public class ExampleBean {
+
+    private AnotherBean beanOne;
+
+    private YetAnotherBean beanTwo;
+
+    private int i;
+
+    public void setBeanOne(AnotherBean beanOne) {
+        this.beanOne = beanOne;
+    }
+
+    public void setBeanTwo(YetAnotherBean beanTwo) {
+        this.beanTwo = beanTwo;
+    }
+
+    public void setIntegerProperty(int i) {
+        this.i = i;
+    }
+}
+```
+
+下面展示的是基于构造器实现的依赖注入：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean">
+    <!-- constructor injection using the nested ref element -->
+    <constructor-arg>
+        <ref bean="anotherExampleBean"/>
+    </constructor-arg>
+
+    <!-- constructor injection using the neater ref attribute -->
+    <constructor-arg ref="yetAnotherBean"/>
+
+    <constructor-arg type="int" value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+下面展示了对应的ExampleBean类：
+
+```java
+public class ExampleBean {
+
+    private AnotherBean beanOne;
+
+    private YetAnotherBean beanTwo;
+
+    private int i;
+
+    public ExampleBean(
+        AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+        this.beanOne = anotherBean;
+        this.beanTwo = yetAnotherBean;
+        this.i = i;
+    }
+}
+```
+
+现在思考这个例子的变体，spring被告知调用一个静态工厂的方法返回对象的一个实例，而不是构造器：
+
+```xml
+<bean id="exampleBean" class="examples.ExampleBean" factory-method="createInstance">
+    <constructor-arg ref="anotherExampleBean"/>
+    <constructor-arg ref="yetAnotherBean"/>
+    <constructor-arg value="1"/>
+</bean>
+
+<bean id="anotherExampleBean" class="examples.AnotherBean"/>
+<bean id="yetAnotherBean" class="examples.YetAnotherBean"/>
+```
+
+下面展示了对应的ExampleBean类：
+
+```java
+public class ExampleBean {
+
+    // a private constructor
+    private ExampleBean(...) {
+        ...
+    }
+
+    // a static factory method; the arguments to this method can be
+    // considered the dependencies of the bean that is returned,
+    // regardless of how those arguments are actually used.
+    public static ExampleBean createInstance (
+        AnotherBean anotherBean, YetAnotherBean yetAnotherBean, int i) {
+
+        ExampleBean eb = new ExampleBean (...);
+        // some other operations...
+        return eb;
+    }
+}
+```
+
+静态工厂方法的参数由<constructor-arg>元素提供，与实际使用的构造器方式完全相同。工厂方法返回的类型不必与包含静态工厂的类型相同。可以以本质上相同的方式使用实例化的工厂方法，因此这里就不讨论这些细节。
+
+### 1.4.2. 详细的依赖和配置
+
