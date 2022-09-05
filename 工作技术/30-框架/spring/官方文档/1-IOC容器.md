@@ -718,3 +718,59 @@ public class ExampleBean {
 
 ### 1.4.2. 详细的依赖和配置
 
+如上一节所述，可以将bean的属性和构造器参数定义为对其他bean（spring管理的bean）的引用或内联定义。为此，spring基于xml的配置元数据，在<property/>和<constructor-arg/>元素中支持子元素类型。
+
+#### 直接值（基本类型、字符串）
+
+<property/>元素的value属性将构造器参数或属性指定为人们可读的字符串形式。spring的转换服务用于将这些值从string类型转换为实际类型。下面的例子展示了这些功能：
+
+```xml
+<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <!-- results in a setDriverClassName(String) call -->
+    <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+    <property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+    <property name="username" value="root"/>
+    <property name="password" value="misterkaoli"/>
+</bean>
+```
+
+使用p-namespace进行更简洁的xml配置：
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close"
+        p:driverClassName="com.mysql.jdbc.Driver"
+        p:url="jdbc:mysql://localhost:3306/mydb"
+        p:username="root"
+        p:password="misterkaoli"/>
+
+</beans>
+```
+
+但是错别字不是在设计时发现，而是在运行时发现。除非使用支持自动完成属性的ide工具，强烈推荐使用这种ide的帮助。
+
+也可以配置一个java.util.Properties实例，如下所示：
+
+```xml
+<bean id="mappings"
+    class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+
+    <!-- typed as a java.util.Properties -->
+    <property name="properties">
+        <value>
+            jdbc.driver.className=com.mysql.jdbc.Driver
+            jdbc.url=jdbc:mysql://localhost:3306/mydb
+        </value>
+    </property>
+</bean>
+```
+
+spring容器通过使用 JavaBeans `PropertyEditor`机制，实现将<value>元素中的值转换为java.util.Properties实例。这是很好的一种方式，也是spring团队喜欢使用的方式。
+
+**元素idref**
