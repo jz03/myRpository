@@ -774,3 +774,584 @@ public class ExampleBean {
 spring容器通过使用 JavaBeans `PropertyEditor`机制，实现将<value>元素中的值转换为java.util.Properties实例。这是很好的一种方式，也是spring团队喜欢使用的方式。
 
 **元素idref**
+
+idref将容器中bean的id传递给<constructor-arg>或<property>元素的一种防错方法。如下所示：
+
+```xml
+<bean id="theTargetBean" class="..."/>
+
+<bean id="theClientBean" class="...">
+    <property name="targetName">
+        <idref bean="theTargetBean"/>
+    </property>
+</bean>
+```
+
+上面的bean等价与下边的配置：
+
+```xml
+<bean id="theTargetBean" class="..." />
+
+<bean id="client" class="...">
+    <property name="targetName" value="theTargetBean"/>
+</bean>
+```
+
+第一种形式比第二种更可取，因为使用idref标记可以让容器部署的时候验证bean是否存在，第二种则没有这个功能，只有在实际实例化客户端bean时才发现错误。如果客户端是一个原型bean，这个错误将会在很久才能发现。
+
+> 在4.1bean中不在支持idref元素的本地属性xsd，因为他不在提供高于常规bean的引用价值。
+
+idref元素在面向aop编程的ProxyFactoryBean拦截器中比较常见。在指定拦截器名称时使用idref元素可以防止拦截器id拼错。
+
+#### 对其他bean的引用（协作者）
+
+ref元素是<constructor-arg>或<property>定义中的最后一个元素。在这里，可以将一个bean的指定属性值设置为对容器中另外一个bean的引用。被引用的bean需要在设置属性之前进行初始化（如果是个单例，可能已经被容器初始化完成）。所有的引用都是对另外一个对象的引用。作用域和校验取决于指定其他对象的id和名称。
+
+通过ref元素标记的bean是通用的形式，他允许在同一个容器或父容器中创建对任何bean的引用，不用管他们是否在同一个文件中。bean的属性值可能与目标bean的id相同，或者与目标bean的name属性相同。如下所示：
+
+```xml
+<ref bean="someBean"/>
+```
+
+通过parent属性指定目标bean将创建对当前容器父容器中的bean的引用。父bean的属性值可能与目标bean的id、name属性值相同。目标bean必须位于当前bean的父容器中。如下所示：
+
+```xml
+<!-- in the parent context -->
+<bean id="accountService" class="com.something.SimpleAccountService">
+    <!-- insert dependencies as required here -->
+</bean>
+```
+
+```xml
+<!-- in the child (descendant) context -->
+<bean id="accountService" <!-- bean name is the same as the parent bean -->
+    class="org.springframework.aop.framework.ProxyFactoryBean">
+    <property name="target">
+        <ref parent="accountService"/> <!-- notice how we refer to the parent bean -->
+    </property>
+    <!-- insert other configuration and dependencies as required here -->
+</bean>
+```
+
+> 在4.0bean xsd中不在支持ref元素的本地值，升级到4.0bean时，将现有的ref更改为ref bean。
+
+#### 内部bean
+
+<constructor-arg>或<property>元素中的<bean>元素定义了一个内部bean，如下所示：
+
+```xml
+<bean id="outer" class="...">
+    <!-- instead of using a reference to a target bean, simply define the target bean inline -->
+    <property name="target">
+        <bean class="com.example.Person"> <!-- this is the inner bean -->
+            <property name="name" value="Fiona Apple"/>
+            <property name="age" value="25"/>
+        </bean>
+    </property>
+</bean>
+```
+
+内部bean定义不需要定义id或名字，如果指定了，容器也不会使用。容器在创建的时候也会忽略作用域，因为内部bean总是匿名的，总是用外部bean创建的。不会出现单独访问内部bean，也不可能注入到协作bean中。
+
+【省略了部分内容】
+
+内部bean通常只是简单的共享他们的范围属性。
+
+#### 集合
+
+<list/>, <set/>, <map/> 和 <props/>元素分别设置Java集合类型list、set、map和Properties。如下所示：
+
+```xml
+<bean id="moreComplexObject" class="example.ComplexObject">
+    <!-- results in a setAdminEmails(java.util.Properties) call -->
+    <property name="adminEmails">
+        <props>
+            <prop key="administrator">administrator@example.org</prop>
+            <prop key="support">support@example.org</prop>
+            <prop key="development">development@example.org</prop>
+        </props>
+    </property>
+    <!-- results in a setSomeList(java.util.List) call -->
+    <property name="someList">
+        <list>
+            <value>a list element followed by a reference</value>
+            <ref bean="myDataSource" />
+        </list>
+    </property>
+    <!-- results in a setSomeMap(java.util.Map) call -->
+    <property name="someMap">
+        <map>
+            <entry key="an entry" value="just some string"/>
+            <entry key="a ref" value-ref="myDataSource"/>
+        </map>
+    </property>
+    <!-- results in a setSomeSet(java.util.Set) call -->
+    <property name="someSet">
+        <set>
+            <value>just some string</value>
+            <ref bean="myDataSource" />
+        </set>
+    </property>
+</bean>
+```
+
+map的键和值或set值可以时下列元素中的任何一个：
+
+```xml
+bean | ref | idref | list | set | map | props | value | null
+```
+
+**集合的合并**
+
+【有待翻译】
+
+```xml
+<beans>
+    <bean id="parent" abstract="true" class="example.ComplexObject">
+        <property name="adminEmails">
+            <props>
+                <prop key="administrator">administrator@example.com</prop>
+                <prop key="support">support@example.com</prop>
+            </props>
+        </property>
+    </bean>
+    <bean id="child" parent="parent">
+        <property name="adminEmails">
+            <!-- the merge is specified on the child collection definition -->
+            <props merge="true">
+                <prop key="sales">sales@example.com</prop>
+                <prop key="support">support@example.co.uk</prop>
+            </props>
+        </property>
+    </bean>
+<beans>
+```
+
+```
+administrator=administrator@example.com
+sales=sales@example.com
+support=support@example.co.uk
+```
+
+**集合合并的限制**
+
+【有待翻译】
+
+**强制类型的集合**
+
+【有待翻译】
+
+```java
+public class SomeClass {
+
+    private Map<String, Float> accounts;
+
+    public void setAccounts(Map<String, Float> accounts) {
+        this.accounts = accounts;
+    }
+}
+```
+
+```xml
+<beans>
+    <bean id="something" class="x.y.SomeClass">
+        <property name="accounts">
+            <map>
+                <entry key="one" value="9.99"/>
+                <entry key="two" value="2.75"/>
+                <entry key="six" value="3.99"/>
+            </map>
+        </property>
+    </bean>
+</beans>
+```
+
+#### 字符串是空值和null
+
+spring将属性指定为空视为空字符串，如下所示：
+
+```xml
+<bean class="ExampleBean">
+    <property name="email" value=""/>
+</bean>
+```
+
+对应的Java代码：
+
+```java
+exampleBean.setEmail("");
+```
+
+<null>元素视为空值。如下所示：
+
+```xml
+<bean class="ExampleBean">
+    <property name="email">
+        <null/>
+    </property>
+</bean>
+```
+
+对应的Java代码：
+
+```java
+exampleBean.setEmail(null);
+```
+
+#### xml快捷方式：p-namespace
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="classic" class="com.example.ExampleBean">
+        <property name="email" value="someone@somewhere.com"/>
+    </bean>
+
+    <bean name="p-namespace" class="com.example.ExampleBean"
+        p:email="someone@somewhere.com"/>
+</beans>
+```
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="john-classic" class="com.example.Person">
+        <property name="name" value="John Doe"/>
+        <property name="spouse" ref="jane"/>
+    </bean>
+
+    <bean name="john-modern"
+        class="com.example.Person"
+        p:name="John Doe"
+        p:spouse-ref="jane"/>
+
+    <bean name="jane" class="com.example.Person">
+        <property name="name" value="Jane Doe"/>
+    </bean>
+</beans>
+```
+
+
+
+#### xml快捷方式：c-namespace
+
+```xml
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:c="http://www.springframework.org/schema/c"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="beanTwo" class="x.y.ThingTwo"/>
+    <bean id="beanThree" class="x.y.ThingThree"/>
+
+    <!-- traditional declaration with optional argument names -->
+    <bean id="beanOne" class="x.y.ThingOne">
+        <constructor-arg name="thingTwo" ref="beanTwo"/>
+        <constructor-arg name="thingThree" ref="beanThree"/>
+        <constructor-arg name="email" value="something@somewhere.com"/>
+    </bean>
+
+    <!-- c-namespace declaration with argument names -->
+    <bean id="beanOne" class="x.y.ThingOne" c:thingTwo-ref="beanTwo"
+        c:thingThree-ref="beanThree" c:email="something@somewhere.com"/>
+
+</beans>
+```
+
+```xml
+<!-- c-namespace index declaration -->
+<bean id="beanOne" class="x.y.ThingOne" c:_0-ref="beanTwo" c:_1-ref="beanThree"
+    c:_2="something@somewhere.com"/>
+```
+
+#### 复合属性名
+
+```xml
+<bean id="something" class="things.ThingOne">
+    <property name="fred.bob.sammy" value="123" />
+</bean>
+```
+
+### 1.4.3. `depends-on`的使用
+
+【有待翻译】
+
+```xml
+<bean id="beanOne" class="ExampleBean" depends-on="manager"/>
+<bean id="manager" class="ManagerBean" />
+```
+
+```xml
+<bean id="beanOne" class="ExampleBean" depends-on="manager,accountDao">
+    <property name="manager" ref="manager" />
+</bean>
+
+<bean id="manager" class="ManagerBean" />
+<bean id="accountDao" class="x.y.jdbc.JdbcAccountDao" />
+```
+
+
+
+### 1.4.4. 懒加载bean
+
+【有待翻译】
+
+```xml
+<bean id="lazy" class="com.something.ExpensiveToCreateBean" lazy-init="true"/>
+<bean name="not.lazy" class="com.something.AnotherBean"/>
+```
+
+```xml
+<beans default-lazy-init="true">
+    <!-- no beans will be pre-instantiated... -->
+</beans>
+```
+
+### 1.4.5. 自动装配协作者
+
+spring容器可以自动装配bean之间的依赖关系，可以通过检查ApplicationContext中的内容，让spring自动为bean解析协作者。自动装配由如下优势：
+
+- 自动装配可以显著减少属性和构造器参数的配置
+- 自动装配可以随着bean对象的发展而更新配置。例如：如果开发者需要向类添加依赖项，那么无需修改配置就可以自动装配该依赖项。因此，自动装配在开发过程中特别有用，而不用在代码库变得更加稳定的时候进行显式配置。
+
+当使用基于xml的配置时，可以使用<bean/>元素的autowire来定义指定自动装配模式。自动装配模式有四种，可以为每个bean指定自动装配，这样就可以选择自动装配的bean。下表描述了四种自动装配模式：
+
+| 模式        | 说明                                                         |
+| ----------- | ------------------------------------------------------------ |
+| no          | （默认）没有自动装配。bean引用必须使用ref元素定义。对于较大的部署，不建议更改默认的配置，因为显式的指定协作者会提供更大的控制和清晰度。在某种程度上来说，记录了系统的结构。 |
+| byName      | 通过属性名进行自动装配。spring寻找与需要自动连接的属性同名的bean。例如：如果一个bean定义被设置为按名称自动装配，并且包含一个master属性（也就是说，有一个对应的setter方法），spring会寻找一个名为master的bean定义，并使用他来配置。 |
+| byType      | 如果spring容器中一个bean中只有一个，则允许该属性自动连接。如果存在多个，就会抛出一个异常。如果没有找到匹配的bean，则什么都不会发生。 |
+| constructor | 类似于byType，只是用于构造器的参数中。如果容器中没有匹配到bean，就会发生错误。 |
+
+使用byType和constructor模式的自动配置，可以连接数组和类型化集合。在这种情况下，将会匹配所有类型的候选者，来满足依赖关系。如果预期的键类型时string，可以自动装配强类型的map实例。一个自动连接的map实例值由匹配预期类型的所有bean实例组成，map类型的键包含相应的bean名称。
+
+#### 自动装配的局限性和缺点
+
+一致使用自动装配效果最好。如果不经常使用自动装配，只是使用它来装配一两个bean，可能会带来更多的困惑。
+
+思考自动装配的局限性和缺点：
+
+- 使用property和constructor-arg显式配置属性，将会覆盖自动装配。对于基本类型、字符串和简单属性的数组，将不会使用自动装配。这种限制是设计出来的。
+- 自动装配不如显式装配精确。尽管如此，spring依旧使用自动装配，spring会小心的避免产生意外的结果（在摸棱两可的情况下）。
+- 连接信息无法生成对应的文档。
+
+容器中有多个bean可以匹配到属性和构造器参数时，对于单个值的依赖项，spring对于这种不确定将不容易解决，如果没有唯一的bean可用，就会发生异常。
+
+对于后一种情况，可以有如下选择：
+
+- 放弃自动装配，使用显式配置。
+- 通过将bean定义的autowire-candidate属性设置为false，不使用自动配置，下一节将会讲述。
+- 通过使用bean定义的primary属性设置为true，将某个bean设置为首选配置。
+- 基于注解进行更细的粒度来配置。
+
+#### 从自动装配中排除一个bean
+
+在每个bean的基础上，可以从自动装配中排除一个bean。在基于xml的配置中，将bean元素的autowire-candidate属性设置为false，该bean的自动装配机制将会失效（如果使用注解的形式，如@Autowired）。
+
+> autowire-candidate属性只能影响基于类型的自动装配。不能影响按名称的显式引用，即使指定的bean没有标记为自动装配的候选，也会得到解析。因此，如果按名称匹配，依然会注入一个bean对象。
+
+还可以基于bean名称的模式匹配来限制自动装配的候选者。顶层bean元素在其默认的autowire-candidate属性中接受一个或多个模式。例如：将自动装配的候选状态设置为名称以Repository结尾的bean。提供多个模式下，在一个分隔列表中定义他们。bean定义优先设置autowire-candidate属性的值，对于这种bean，模式匹配规则将不适用。
+
+这是不希望将一个bean注入到其他bean中的技术。这并不意味着被排除的bean本身不能使用自动装配机制。
+
+### 1.4.6 方法注入
+
+在大多数的应用场景中，容器中的大多数bean时单例的。当一个单例bean需要另一个单例bean进行协作，或者一个非单例bean需要另外一个非单例bean协作时，通常通过一个bean定义来依赖另外一个bean处理依赖关系。当bean的生命周期（作用范围）不同时，就会出现问题。假设单例bean A需要使用非单例bean B,可能在A的每个方法调用上。容器只创建一个单例bean A，因此只获得一次设置的机会，容器不会在每次需要bean B新实例时为Bean B提供一个。
+
+一个解决方法是放弃ioc控制。可以通过实现ApplicationContextAware接口，来解决上述的场景，如下所示：
+
+```java
+// a class that uses a stateful Command-style class to perform some processing
+package fiona.apple;
+
+// Spring-API imports
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+public class CommandManager implements ApplicationContextAware {
+
+    private ApplicationContext applicationContext;
+
+    public Object process(Map commandState) {
+        // grab a new instance of the appropriate Command
+        Command command = createCommand();
+        // set the state on the (hopefully brand new) Command instance
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    protected Command createCommand() {
+        // notice the Spring API dependency!
+        return this.applicationContext.getBean("command", Command.class);
+    }
+
+    public void setApplicationContext(
+            ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+}
+```
+
+这种方法是不可取的，因为业务代码与spring框架进行了耦合。方法注入是spring ioc容器的高级特性，可以很好的处理这个问题。
+
+#### 查找方法注入
+
+查找方法注入是在容器管理的bean上的方法中查找另外一个bean的能力，通常涉及一个原型bean，如上一个场景所述。spring框架通过使用从cglib库生成的字节码来动态的生成覆盖该方法的子类来实现这种方法的注入。
+
+> - 为了使用这个动态子类工作，spring bean容器的子类不能是final类，需要重写的方法也不能是final类型。
+> - 对于一个具有抽象方法的类进行测试，需要自己创建该类的子类，并提供该方法的具体实现。
+> - 组件扫描也需要具体的方法。
+> - 一个限制是，查找方法注入不能与工厂方法一起工作，特别是不能和配置类中的@Bean方法一起工作，因为在这样的情况下，容器不负责创建实例，因此不能动态创建运行时生成的子类。
+
+对于前边的代码，对于CommandManager类，spring容器动态创建覆盖createCommand()方法，CommandManager类没有依赖spring，如下所示：
+
+```java
+package fiona.apple;
+
+// no more Spring imports!
+
+public abstract class CommandManager {
+
+    public Object process(Object commandState) {
+        // grab a new instance of the appropriate Command interface
+        Command command = createCommand();
+        // set the state on the (hopefully brand new) Command instance
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    // okay... but where is the implementation of this method?
+    protected abstract Command createCommand();
+}
+```
+
+在包含的注入方法客户端（本例如CommandManager）中，要注入的方法需要如下形式的方法签名：
+
+```
+<public|protected> [abstract] <return-type> theMethodName(no-arguments);
+```
+
+如果方法是抽象的，框架会动态生成子类的实现方法。否则，动态生成的子类将会覆盖原来的方法内容。思考下面的例子：
+
+```xml
+<!-- a stateful bean deployed as a prototype (non-singleton) -->
+<bean id="myCommand" class="fiona.apple.AsyncCommand" scope="prototype">
+    <!-- inject dependencies here as required -->
+</bean>
+
+<!-- commandProcessor uses statefulCommandHelper -->
+<bean id="commandManager" class="fiona.apple.CommandManager">
+    <lookup-method name="createCommand" bean="myCommand"/>
+</bean>
+```
+
+标识为commandManager的bean在需要myCommand bean的新实例时调用他自己的createCommand（）方法，必须小心的将myCommand配置为prototype，如果是单例，每次都会返回同一个bean实例。
+
+在基于注解的方式中，可以通过@Lookup注解声明一个查找方法，如下所示：
+
+```java
+public abstract class CommandManager {
+
+    public Object process(Object commandState) {
+        Command command = createCommand();
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    @Lookup("myCommand")
+    protected abstract Command createCommand();
+}
+```
+
+更加通用的做法是，可以依赖于目标bean根据查找方法声明的返回值类型进行解析：
+
+```java
+public abstract class CommandManager {
+
+    public Object process(Object commandState) {
+        Command command = createCommand();
+        command.setState(commandState);
+        return command.execute();
+    }
+
+    @Lookup
+    protected abstract Command createCommand();
+}
+```
+
+注意，应该使用具体的实现来声明这种带注解的查找方法，以便与spring组件扫描兼容，因为在默认情况下抽象类会被忽略。这种限制不适用于显式的配置。
+
+> 访问作用域的不同的目标bean另一种方法是ObjectFactory`/ `Provider。请参阅相关章节。
+>
+> 可能发现org.springframework.beans.factory.config.ServiceLocatorFactoryBean被使用。
+
+#### 任意方法替换
+
+与查找方法相比，方法注入的另外一种较小的用处是，能够用另一种方法实现替换托管bean中的任意方法。可以跳过本章节剩余的部分，直到真正使用到在看也行。
+
+对于基于xml的配置，可以使用replaced-method属性将已经部署的bean现有的方法替换为另一种方法。思考下面的类，来重写一下computeValue方法：
+
+```java
+public class MyValueCalculator {
+
+    public String computeValue(String input) {
+        // some real code...
+    }
+
+    // some other methods...
+}
+```
+
+org.springframework.beans.factory.support.MethodReplacer接口的实现类提供了一个新方法定义，如下所示：
+
+```java
+/**
+ * meant to be used to override the existing computeValue(String)
+ * implementation in MyValueCalculator
+ */
+public class ReplacementComputeValue implements MethodReplacer {
+
+    public Object reimplement(Object o, Method m, Object[] args) throws Throwable {
+        // get the input value, work with it, and return a computed result
+        String input = (String) args[0];
+        ...
+        return ...;
+    }
+}
+```
+
+这个bean指定原始类的方法，如下所示：
+
+```xml
+<bean id="myValueCalculator" class="x.y.z.MyValueCalculator">
+    <!-- arbitrary method replacement -->
+    <replaced-method name="computeValue" replacer="replacementComputeValue">
+        <arg-type>String</arg-type>
+    </replaced-method>
+</bean>
+
+<bean id="replacementComputeValue" class="a.b.c.ReplacementComputeValue"/>
+```
+
+可以在replaced-method元素中使用一个或多个arg-type元素来指定被重写方法的参数。为了方便起见，参数的类型字符串可以使用全限定类型。例如：以下匹配java.lang.String类型：
+
+```
+java.lang.String
+String
+Str
+```
+
+## 1.5. bean的范围
+
+
+
