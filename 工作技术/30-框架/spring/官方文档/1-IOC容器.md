@@ -1524,4 +1524,194 @@ public class AppPreferences {
 
 spring ioc容器不仅能管理bean对象的实例化，而且还能管理协作bean（依赖项）的连接。如果想将一个http请求范围的bean注入到另外一个时间更长的作用域bean中，可以选择使用aop代理来替代原来的bean。换句话说，需要注入一个代理对象，该对象公开与范围对象相同的公共接口，也可以从相关范围内检索到真正的目标对象，并将方法委托给真正对象。
 
-> 
+> 还可以在单例作用域的bean之间使用<aop:scoped-proxy>元素，然后引用一个可以序列化的中间代理，然后在反序列化时重新获得目标单例bean。
+>
+> 当在原型作用域的bean中使用aop:scoped-proxy元素时，共享代理上的每个方法都会创建一个新的实例，然后转发到目标bean。
+>
+> 范围代理并不是唯一的解决方法，还可以将注入点声明为ObjectFactory<MyTargetBean>，从而允许getObject()调用在每次需要当前实例时根据需要检索当前实例，而不用单独保存他。
+>
+> 作为扩展变体，可以声明为bjectProvider<MyTargetBean>，提供了几个额外的访问方法，包括getIfAvailable和getIfUnique。
+>
+> 此功能的 JSR-330 变体是Provider，并与Provider<MyTargetBean>声明和对应的get()方法调用一起用于检索。
+
+下面展示的例子只有一行配置，但是要理解背后的“why”和“how”十分重要。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- an HTTP Session-scoped bean exposed as a proxy -->
+    <bean id="userPreferences" class="com.something.UserPreferences" scope="session">
+        <!-- instructs the container to proxy the surrounding bean -->
+        <aop:scoped-proxy/> ①
+    </bean>
+
+    <!-- a singleton-scoped bean injected with a proxy to the above bean -->
+    <bean id="userService" class="com.something.SimpleUserService">
+        <!-- a reference to the proxied userPreferences bean -->
+        <property name="userPreferences" ref="userPreferences"/>
+    </bean>
+</beans>
+```
+
+①定义代理所在的行。
+
+要创建这样的代理，需要将<aop:scoped-proxy>元素插入到有范围的bean定义中。至于为什么这么做，请考虑下边的单例bean定义，进行对比：
+
+```xml
+<bean id="userPreferences" class="com.something.UserPreferences" scope="session"/>
+
+<bean id="userManager" class="com.something.UserManager">
+    <property name="userPreferences" ref="userPreferences"/>
+</bean>
+```
+
+在前面的示例中，单例bean（userManager）被注入了session范围的bean（userPreferences）。需要说明的一点是userManager bean是一个单例（在spring容器中只实例化一次），并且它的依赖项也是注入一次。这就意味着userManager bean只操作配置完整的userPreferences对象实例。
+
+将较短范围的bean注入到较长范围的bean中时，这不是想要的。相反，需要一个单例范围的userManager对象，并且在http会话的生命周期内，有一个http会话范围内的userPreferences对象。因此，容器创建一个对象，该对象与userPreferences类有完全相同的公共接口，可以从范围机制中获取真正的userPreferences对象。容器将这个代理对象注入到userManager bean中，他并不知道userPreferences引用的是一个代理。在这个例子中，当userManager对象调用依赖项userPreferences对象上的一个方法时，实际上是一个被代理的方法，然后代理从真是的userPreferences对象中调用真正的方法。
+
+因此，正确的配置如下所示：
+
+```xml
+<bean id="userPreferences" class="com.something.UserPreferences" scope="session">
+    <aop:scoped-proxy/>
+</bean>
+
+<bean id="userManager" class="com.something.UserManager">
+    <property name="userPreferences" ref="userPreferences"/>
+</bean>
+```
+
+**选择要创建的代理类型**
+
+默认情况下，spring容器将为使用<aop:scoped-proxy>元素标记的bean创建代理时，会创建一个基于cglib的类代理。
+
+> cglib代理只拦截公共方法上的调用。
+
+另外，还可以配置spring容器，通过<aop:scoped-proxy>元素的proxy-target-class属性指定为false，为此类的作用域设置为基于Java jdk接口的标准代理。使用基于jdk接口的代理，不需要添加任何其他库，然而，这也意味着要代理bean类需要至少有一个接口。下面展示了一个基于接口的代理配置：
+
+```xml
+<!-- DefaultUserPreferences implements the UserPreferences interface -->
+<bean id="userPreferences" class="com.stuff.DefaultUserPreferences" scope="session">
+    <aop:scoped-proxy proxy-target-class="false"/>
+</bean>
+
+<bean id="userManager" class="com.stuff.UserManager">
+    <property name="userPreferences" ref="userPreferences"/>
+</bean>
+```
+
+更多详细信息，请参考代理机制的部分。
+
+### 1.5.5. 自定义范围
+
+bean的范围机制是可以扩展的，可以自定义范围，甚至可以重新定义已经存在的范围，尽管后者被认为是不好的实践，不能够覆盖内置的singleton和prototype范围。
+
+#### 创建一个自定义范围
+
+为了将自定义的范围集成到spring容器中，需要实现org.springframework.beans.factory.config.Scope接口，要想了解更多关于如何实现自定义范围，请参考spring框架中的实现和相关文档，后者更加详细的介绍了如何实现的方法。
+
+scope接口提供了四个方法，用于操作对象，分别是从范围中获取对象，删除销毁对象。
+
+例如，session范围对获取对象的实现。下面展示的是scope接口中的方法定义：
+
+```java
+Object get(String name, ObjectFactory<?> objectFactory)
+```
+
+例如，session范围实现删除session范围的bean。如果存在对象则返回，如果不存在，则返回空。下面展示的是scope接口中的方法定义：
+
+```java
+Object remove(String name)
+```
+
+下面的方法注册了一个回调函数，当对象被销毁，就会调用这个回调函数。
+
+```java
+void registerDestructionCallback(String name, Runnable destructionCallback)
+```
+
+下边的方法是获取作用域的标识符。
+
+```java
+String getConversationId()
+```
+
+每个作用域的标识符都不一样，对于session作用域来说，此标识符是：session
+
+#### 使用自定义范围
+
+在编写和测试一个或多个自定义范围之后，需要让spring容器知道新的范围。下面展示了如何向spring容器中注册：
+
+```java
+void registerScope(String scopeName, Scope scope);
+```
+
+此方法是在ConfigurableBeanFactory接口上声明的，该接口可以获得大多数的spring 容器的配置。registerScope方法的第一个参数是与范围名称相关。spring中已经存在的名称有single和prototype。方法的第二个参数是要注册使用的具体的实现类。
+
+假设编写了自定义范围，然后注册他，如下所示：
+
+> 下边的示例是使用SimpleThreadScope，它包含在spring中，但是默认情况下没有注册。对于自定义范围的使用方法相同。
+
+```java
+Scope threadScope = new SimpleThreadScope();
+beanFactory.registerScope("thread", threadScope);
+```
+
+然后，可以创建符合自定义范围的bean定义，如下所示：
+
+```xml
+<bean id="..." class="..." scope="thread">
+```
+
+使用自定义范围，不仅局限于编程注册的方式，还可以使用CustomScopeConfigurer类以声明的方式进行注册，如下所示：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean class="org.springframework.beans.factory.config.CustomScopeConfigurer">
+        <property name="scopes">
+            <map>
+                <entry key="thread">
+                    <bean class="org.springframework.context.support.SimpleThreadScope"/>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="thing2" class="x.y.Thing2" scope="thread">
+        <property name="name" value="Rick"/>
+        <aop:scoped-proxy/>
+    </bean>
+
+    <bean id="thing1" class="x.y.Thing1">
+        <property name="thing2" ref="thing2"/>
+    </bean>
+
+</beans>
+```
+
+## 1.6. 自定义bean的性质
+
+spring框架提供了许多接口，可以使用他们自定义bean的性质，本节的组织如下：
+
+- 生命周期回调
+- ApplicationContextAware 和`BeanNameAware`
+
+- 其他装配接口
+
+### 1.6.1.生命周期回调
+
