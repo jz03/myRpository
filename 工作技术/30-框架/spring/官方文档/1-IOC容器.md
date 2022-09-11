@@ -1351,7 +1351,177 @@ String
 Str
 ```
 
-## 1.5. bean的范围
+## 1.5. bean的范围（作用域）
 
+当创建一个bean定义时，对应创建了一系列的配置信息，用于创建该bean的实例。bean定义的一系列配置十分重要，通过这些配置可以创建许多的对象实例。
 
+不仅可以直接控制插入到bean配置中的各种依赖项和配置信息，还可以控制从特定bean定义创建对象的范围。这种方式强大而灵活，开发者可以通过配置选择创建对象的范围，可以将bean定义为部署在多个作用域中的一个。spring框架支持6个作用域，其中4个是在web应用中才能用到。还支持自定义bean的范围。
 
+支持的作用域如下表所示：
+
+| 范围        | 描述                                                     |
+| ----------- | -------------------------------------------------------- |
+| singlenton  | （默认）将每个spring ioc容器的一个bean定义创建一个对象。 |
+| prototype   | 将一个bean定义创建任意多个对象。                         |
+| request     | 将一个bean定义作用于单个http请求中。                     |
+| session     | 将一个bean定义作用于http的session中。                    |
+| application | 将一个bean定义作用于servletContext中。                   |
+| websocket   | 将一个bean定义作用于websocket中。                        |
+
+> 从spring3.0开始，添加了线程范围的作用域，在默认情况下没有注册使用。
+
+### 1.5.1. singlenton范围
+
+只管理一个bean的一个共享实例，对bean的所有请求都使用依赖注入或与该bean定义匹配的id将会一个bean实例。
+
+换句话说，当定义一个bean的作用域是单例时，spring ioc容器将会创建一个bean实例，该单一实例将会存储在缓存中，其他地方引用使用这个单一实例。下图展示了单例作用域是如何工作的：
+
+![singleton](singleton.png)
+
+spring中的单例与设计模式中的单例存在差别，设计模式中的单例硬编码为一个类的实例，每个ClassLoader只创建一个实例。spring的单例是在容器中只创建一个实例。这就说明，在一个spring容器中，定义为单例范围的bean只能创建一个实例。单例范围是spring中默认作用域。基于xml的配置中，可以如下做出配置：
+
+```xml
+<bean id="accountService" class="com.something.DefaultAccountService"/>
+
+<!-- the following is equivalent, though redundant (singleton scope is the default) -->
+<bean id="accountService" class="com.something.DefaultAccountService" scope="singleton"/>
+```
+
+### 1.5.2. prototype范围
+
+bean定义为非单例的原型范围，会导致每次对bean的引用都会创建新的实例。也就是说，该bean被注入到另外一个bean中，或者使用getBean（）方法获取他，每次获取的对象都是新创建的。应该对所有有状态的bean使用原型范围，对无状态的bean使用单例范围。
+
+下图对prototype范围的说明：
+
+![prototype](prototype.png)
+
+数据访问对象通常不会设置为原型，因为典型的dao不包含任何状态。使用单例范围更加适合。
+
+下面展示了基于xml的配置：
+
+```xml
+<bean id="accountService" class="com.something.DefaultAccountService" scope="prototype"/>
+```
+
+与其他作用范围相比，原型范围没有完整的spring bean的生命周期。容器实例化，配置或以其他的方式组装一个原型对象并将给客户端，而不需要该实例进一步记录其他信息。尽管初始化生命周期回调方法会在所有对象上调用，而不用考虑作用域。在原型范围的情况下，配置销毁生命周期回调方法将不会调用。客户端代码必须清理这些原型范围的对象，并释放原型bean持有的内存资源。如果想让spring释放原型bean的实例资源，可以尝试使用自定义bean post-processor，他持有对需要清理bean的引用。
+
+### 1.5.3. 依赖项是原型bean的单例bean
+
+依赖项是原型bean的单例bean时，依赖关系是在实例化时被解析的，如果将原型bean注入到单例bean时，则会实例化一个新的bean，然后将其注入到单例bean中。
+
+但是，如果单例bean在运行时反复获取原型bean实例，这种情况将不会执行，因为注入只在spring容器初始化的时候注入一次。如果想达到自己想要的效果，可以参看方法注入。
+
+### 1.5.4. Request, Session, Application, 和WebSocket 范围
+
+Request, Session, Application, 和WebSocket范围只能在web容器（XmlWebApplicationContext）中才能正常工作，如果在普通的spring ioc容器中，使用这些范围就会抛出异常（IllegalStateException）。
+
+#### 初始化web配置
+
+在使用这些作用域的bean时，需要进行一下web的初始化配置。
+
+如何完成这些配置取决于所在的servlet环境。
+
+如果在spring web mvc中访问这些作用域，不需要进行特殊的配置，DispatcherServlet已经公开了所有的相关状态。
+
+如果使用的是一个servlet 2.5web容器，请求不在spring mvc中，此时需要注册org.springframework.web.context.request.RequestContextListener。ServletRequestListener是对于servlet3.0+，可以通过使用WebApplicationInitializer接口编程完成。对于旧容器，添加以下声明到web应用程序中。
+
+```xml
+<web-app>
+    ...
+    <listener>
+        <listener-class>
+            org.springframework.web.context.request.RequestContextListener
+        </listener-class>
+    </listener>
+    ...
+</web-app>
+```
+
+如果监听器存在问题，可以考虑使用spring的RequestContextFilter。过滤器映射取决于web应用程序的配置，所以必须进行适当的修改。下边显式了一个web应用程序过滤器的部分：
+
+```xml
+<web-app>
+    ...
+    <filter>
+        <filter-name>requestContextFilter</filter-name>
+        <filter-class>org.springframework.web.filter.RequestContextFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>requestContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    ...
+</web-app>
+```
+
+`DispatcherServlet`, `RequestContextListener`, 和RequestContextFilter做的是完全相同的事情，即将http请求对象绑定到服务请求的线程。这使得请求和session作用域在调用链的下游可用。
+
+#### request 范围
+
+思考下边基于xml配置的bean定义：
+
+```xml
+<bean id="loginAction" class="com.something.LoginAction" scope="request"/>
+```
+
+spring 容器通过为每个http请求使用LoginAction的bean定义来创建新实例。也就是说，LoginAction bean的作用域是在http请求范围内的。可以随心所欲的更改实例中的状态，因为普通的LoginAction bean定义看不到这些状态的变化。当请求处理完成之后，将放弃作用域是request 的bean。
+
+当使用基于注解或Java代码配置时，可以使用@RequestScope注解将组件指定为Request范围。如下所示：
+
+```java
+@RequestScope
+@Component
+public class LoginAction {
+    // ...
+}
+```
+
+#### session 范围
+
+思考下边基于xml配置的bean定义：
+
+```xml
+<bean id="userPreferences" class="com.something.UserPreferences" scope="session"/>
+```
+
+【原理与requset范围相似】
+
+当使用基于注解或Java代码配置时，可以使用@SessionScope注解将组件指定为session范围。如下所示：
+
+```java
+@SessionScope
+@Component
+public class UserPreferences {
+    // ...
+}
+```
+
+#### application 范围
+
+思考下边基于xml配置的bean定义：
+
+```xml
+<bean id="appPreferences" class="com.something.AppPreferences" scope="application"/>
+```
+
+spring 容器通过为整个web应用程序使用一次AppPreferences的bean定义来创建实例。也就是说，AppPreferences bean的作用域是servletcontext容器中的，并存储为servletcontext的常规属性，有点与singlenton范围比较像，但是有两个方面有所不同，他是servletcontext中的单例，而不是spring容器中的单例，对于每个spring容器，可能存在多个servletcontext,这些都是公开可见的。
+
+当使用基于注解或Java代码配置时，可以使用@ApplicationScope注解将组件指定为application范围。如下所示：
+
+```java
+@ApplicationScope
+@Component
+public class AppPreferences {
+    // ...
+}
+```
+
+#### WebSocket 范围
+
+详情请参考WebSocket 部分。
+
+#### 带有范围的Bean作为依赖项
+
+spring ioc容器不仅能管理bean对象的实例化，而且还能管理协作bean（依赖项）的连接。如果想将一个http请求范围的bean注入到另外一个时间更长的作用域bean中，可以选择使用aop代理来替代原来的bean。换句话说，需要注入一个代理对象，该对象公开与范围对象相同的公共接口，也可以从相关范围内检索到真正的目标对象，并将方法委托给真正对象。
+
+> 
