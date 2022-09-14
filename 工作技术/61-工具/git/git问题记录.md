@@ -101,3 +101,10 @@ system：登录这台计算机的有效，不管是哪个用户，作用域最�
 #### 12.idea版本修改账号密码
 
 密码存放的路径在setting>appearance&Behavior>system settings >passwords设置中，然后进行修改，如果修改不成功，就把原来指定的文件删除，然后重新操作，输入账号密码生成文件。
+
+#### 13.解决终端命令框显式中文乱码
+
+```bash
+git config --global core.quotepath false
+```
+

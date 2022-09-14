@@ -1897,7 +1897,7 @@ Destroy方法的调用顺序相同:
 
 #### 启动和关闭回调
 
-生命周期接口为任何具有自己生命周期需求的对象(例如启动和停止某些后台进程)定义了基本方法:
+Lifecycle接口为任何具有自己生命周期需求的对象(例如启动和停止某些后台进程)定义了基本方法:
 
 ```java
 public interface Lifecycle {
@@ -1910,7 +1910,7 @@ public interface Lifecycle {
 }
 ```
 
-任何spring管理的对象都可以实现生命周期接口。然后，当ApplicationContext本身接收到启动和停止信号(例如，对于运行时的停止/重启场景)时，它将这些调用级联到该上下文中定义的所有Lifecycle接口的实现。它通过委托给LifecycleProcessor来做到这一点，如下面的清单所示:
+任何spring管理的对象都可以实现Lifecycle接口。然后，当ApplicationContext本身接收到启动和停止信号(例如，对于运行时的停止/重启场景)时，它将这些调用级联到该上下文中定义的所有Lifecycle接口的实现。它通过委托给LifecycleProcessor来做到这一点，如下面的清单所示:
 
 ```java
 public interface LifecycleProcessor extends Lifecycle {
@@ -1921,8 +1921,114 @@ public interface LifecycleProcessor extends Lifecycle {
 }
 ```
 
-注意，LifecycleProcessor本身是生命周期接口的扩展。它还添加了另外两个方法，用于对刷新和关闭的上下文做出响应。
+注意，LifecycleProcessor接口本身是Lifecycle接口的扩展。它还添加了另外两个方法，用于对刷新和关闭的上下文做出响应。
 
+> 注意，常规的org.springframework.context.Lifecycle接口是用于显式启动和停止通知的普通契约，并不意味着在上下文刷新时自动启动。要对特定bean的自动启动进行细粒度控制(包括启动阶段)，请考虑实现org.springframework.context.SmartLifecycle。
+>
+> 另外，请注意，停止通知不保证在销毁之前到来。在常规关闭时，所有Lifecycle bean首先会在传播常规销毁回调之前收到停止通知。然而，在上下文生命周期中的热刷新或停止刷新尝试时，只调用destroy方法。
 
+启动和关闭调用的顺序可能很重要。如果任何两个对象之间存在“依赖”关系，则依赖方在其依赖方之后开始，在其依赖方之前停止。然而，有时直接依赖关系是未知的。您可能只知道某一类型的对象应该先于另一类型的对象启动。在这些情况下，SmartLifecycle接口定义了另一个选项，即getPhase()方法，就像它的超级接口phase中定义的那样。如下所示：
+
+```java
+public interface Phased {
+
+    int getPhase();
+}
+```
+
+下面展示的是SmartLifecycle接口的定义：
+
+```java
+public interface SmartLifecycle extends Lifecycle, Phased {
+
+    boolean isAutoStartup();
+
+    void stop(Runnable callback);
+}
+```
+
+启动时，相位最低的对象先启动。当停止时，遵循相反的顺序。因此，实现SmartLifecycle的对象，其getPhase()方法返回Integer。MIN_VALUE将是第一个启动和最后一个停止的。在频谱的另一端，相位值为Integer。MAX_VALUE将指示该对象应该最后启动并首先停止(可能是因为它依赖于正在运行的其他进程)。在考虑阶段值时，还必须知道没有实现SmartLifecycle的任何“正常”生命周期对象的默认阶段为0。因此，任何负的相位值都表明对象应该在那些标准组件之前启动(并在它们之后停止)。相反，对于任何正相位值都是如此。
+
+SmartLifecycle定义的stop方法接受回调。任何实现都必须在该实现的关闭过程完成后调用该回调的run()方法。因为LifecycleProcessor接口的默认实现DefaultLifecycleProcessor等待每个阶段中的对象组的超时值，以调用回调，所以在必要的地方启用异步关闭。默认的每阶段超时时间是30秒。您可以通过在上下文中定义一个名为lifecycleProcessor的bean来覆盖默认的生命周期处理器实例。如果你只想修改超时时间，定义以下代码就足够了:
+
+```xml
+<bean id="lifecycleProcessor" class="org.springframework.context.support.DefaultLifecycleProcessor">
+    <!-- timeout value in milliseconds -->
+    <property name="timeoutPerShutdownPhase" value="10000"/>
+</bean>
+```
+
+如前所述，LifecycleProcessor接口还定义了刷新和关闭上下文的回调方法。后者驱动关闭过程，就像显式调用了stop()一样，但它发生在上下文关闭时。另一方面，'refresh'回调启用了SmartLifecycle bean的另一个特性。当刷新上下文时(在所有对象都已实例化和初始化之后)，将调用该回调。这时，默认生命周期处理器检查每个SmartLifecycle对象的isAutoStartup()方法返回的布尔值。如果为true，该对象将在此时启动，而不是等待显式调用上下文的或它自己的start()方法(与上下文刷新不同，对于标准上下文实现，上下文启动不会自动发生)。如前所述，阶段值和任何“依赖”关系决定启动顺序。
 
 #### 在非web应用程序中优雅地关闭Spring IoC容器
+
+> 本节仅适用于非web应用。Spring基于web的ApplicationContext实现已经有适当的代码，可以在相关web应用程序关闭时优雅地关闭Spring IoC容器。
+
+如果您在非web应用程序环境中使用Spring的IoC容器(例如，在富客户端桌面环境中)，请向JVM注册一个关闭钩子。这样做可以确保良好的关闭，并在单例bean上调用相关的destroy方法，以便释放所有资源。您仍然必须正确地配置和实现这些销毁回调。
+
+要注册一个关机钩子，调用在ConfigurableApplicationContext接口上声明的registerShutdownHook()方法，如下例所示:
+
+```java
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public final class Boot {
+
+    public static void main(final String[] args) throws Exception {
+        ConfigurableApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+
+        // add a shutdown hook for the above context...
+        ctx.registerShutdownHook();
+
+        // app runs here...
+
+        // main method exits, hook is called prior to the app shutting down...
+    }
+}
+```
+
+### 1.6.2. `ApplicationContextAware` 和`BeanNameAware`
+
+当一个ApplicationContext创建了一个实现了org.springframework.context.ApplicationContextAware接口的对象实例时，该实例会被提供一个对该ApplicationContext的引用。下面的清单显示了ApplicationContextAware接口的定义:
+
+```java
+public interface ApplicationContextAware {
+
+    void setApplicationContext(ApplicationContext applicationContext) throws BeansException;
+}
+```
+
+因此，bean可以通过ApplicationContext接口或将引用转换为该接口的已知子类(例如ConfigurableApplicationContext，它公开了额外的功能)，以编程方式操作创建它们的ApplicationContext。其中一个用途是对其他bean进行编程检索。有时这个功能是有用的。但是，一般情况下，您应该避免它，因为它将代码耦合到Spring，并且不遵循控制反转风格，在这种风格中，协作者作为属性提供给bean。ApplicationContext的其他方法提供对文件资源、发布应用程序事件和访问MessageSource的访问。这些附加特性在ApplicationContext的附加功能中有描述。
+
+自动装配是获取对ApplicationContext的引用的另一种选择。传统的构造函数和byType自动装配模式(如自动装配合作者中所述)可以分别为构造函数参数或setter方法参数提供类型为ApplicationContext的依赖项。要获得更大的灵活性，包括自动装配字段和多个参数方法的能力，请使用基于注释的自动装配特性。如果这样做，则ApplicationContext将自动连接到一个字段、构造函数参数或方法参数中，如果有关的字段、构造函数或方法携带@Autowired注释，则该参数期望ApplicationContext类型。有关更多信息，请参见使用@Autowired。
+
+当ApplicationContext创建一个实现了org.springframework.bean .factory. beannameaware接口的类时，该类提供了一个对其关联对象定义中定义的名称的引用。下面的清单显示了BeanNameAware接口的定义:
+
+```java
+public interface BeanNameAware {
+
+    void setBeanName(String name) throws BeansException;
+}
+```
+
+在填充普通bean属性之后调用回调，但在初始化回调(如InitializingBean.afterPropertiesSet())或自定义初始化方法之前调用回调。
+
+### 1.6.3. 其他的aware接口
+
+除了applicationcontexttaware和BeanNameAware(前面讨论过)之外，Spring还提供了广泛的Aware回调接口，允许bean向容器指示它们需要某种基础设施依赖。作为一般规则，名称表示依赖项类型。下表总结了最重要的Aware接口:
+
+| 名字                           | 注入依赖项                                                   | 所在章节                                                     |
+| ------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ApplicationContextAware        | 声明ApplicationContext                                       | [`ApplicationContextAware` and `BeanNameAware`](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-aware) |
+| ApplicationEventPublisherAware | 封闭的ApplicationContext的事件发布者。                       | [Additional Capabilities of the `ApplicationContext`](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#context-introduction) |
+| BeanClassLoaderAware           | 用于装入bean类的类装入器。                                   | [Instantiating Beans](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-class) |
+| BeanFactoryAware               | 声明BeanFactory                                              | [The `BeanFactory` API](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-beanfactory) |
+| BeanNameAware                  | 声明bean的名称。                                             | [`ApplicationContextAware` and `BeanNameAware`](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans-factory-aware) |
+| LoadTimeWeaverAware            | 已定义编织器，用于在加载时处理类定义。                       | [Load-time Weaving with AspectJ in the Spring Framework](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#aop-aj-ltw) |
+| MessageSourceAware             | 为解析消息配置的策略(支持参数化和国际化)。                   | [Additional Capabilities of the `ApplicationContext`](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#context-introduction) |
+| NotificationPublisherAware     | Spring JMX通知发布器。                                       | [Notifications](https://docs.spring.io/spring-framework/docs/current/reference/html/integration.html#jmx-notifications) |
+| ResourceLoaderAware            | 为对资源的低级访问配置了加载器。                             | [Resources](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#resources) |
+| ServletConfigAware             | 容器运行的当前ServletConfig。只在web感知的Spring ApplicationContext中有效。 | [Spring MVC](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc) |
+| ServletContextAware            | 容器运行的当前ServletContext。只在web感知的Spring ApplicationContext中有效。 | [Spring MVC](https://docs.spring.io/spring-framework/docs/current/reference/html/web.html#mvc) |
+
+再次注意，使用这些接口将您的代码绑定到Spring API，并且不遵循控制反转风格。因此，我们建议将它们用于需要对容器进行编程访问的基础设施bean。
