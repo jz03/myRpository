@@ -35,5 +35,7 @@ mr = db.runCommand({
 db[mr.result].distinct("_id")
 ```
 
+### 4.时区问题
+MongoDB自带的Date，时间是UTC的时间，和咱们中国时区少8个小时。MongoDB中的Date类型数据只保存绝对时间值，不保存时区信息，因此“显示的时间”取决于MongoDB的客户端设置。
 
 
