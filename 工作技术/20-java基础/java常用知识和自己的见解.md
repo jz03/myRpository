@@ -29,9 +29,9 @@ default void forEach(Consumer<? super T> action) {
 }
 ```
 
-### 4.JNI
+### 4.JNI（Java Native Interface）
 
-JNI是本地方法实现的一种方式。
+JNI是本地方法实现的一种方式，实现这些接口程序是由C\C++语言来编写的
 
 ### 5.下划线转为驼峰方式
 
