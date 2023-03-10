@@ -233,6 +233,8 @@ public ThreadPoolExecutor(int corePoolSize,
 
 这些类的使用能够替代wait、notify方法的使用。
 
+- ReentrantLock：完全可以替代synchronized关键字，还有wait(),notify()方法。
+
 - CountDownLatch:一种同步辅助，允许一个或多个线程等待，直到在其他线程中执行的一组操作完成。
 
   倒计时启动，初始化一个数字，当数字为0时，执行wait方法后边的程序
